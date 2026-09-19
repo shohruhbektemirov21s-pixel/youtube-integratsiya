@@ -1,8 +1,8 @@
 # Environment variables
 .env
-.env.local
-.env.*.local
+.env.*
 !.env.example
+!.env.production.example
 
 # Python
 __pycache__/
@@ -35,13 +35,21 @@ env/
 ENV/
 backend/venv/
 
-# Django
+# Django & Media & Logs
 *.log
+logs/
+backend/logs/
+backend/staticfiles/
+backend/media/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media/
 staticfiles/
+
+# Database dumps
+*.sql
+*.sql.gz
 
 # Node / Frontend
 node_modules/

@@ -297,3 +297,54 @@ class YouTubeServiceTests(APITestCase):
             service.fetch_channel_details('UC_any_channel')
 
 
+class YouTubeSecurityTests(APITestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username='channel_owner', password='Password123!')
+        self.attacker = User.objects.create_user(username='attacker_user', password='Password123!')
+        self.attacker_token = Token.objects.create(user=self.attacker)
+
+        self.victim_channel = YouTubeChannel.objects.create(
+            owner=self.owner,
+            channel_id='UC_victim_channel_9999',
+            title='Victim Channel'
+        )
+
+    def test_create_playlist_idor_blocked(self):
+        # Attacker tries to inject a playlist into Victim's channel
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.attacker_token.key}')
+        url = reverse('youtube-playlist-list')
+        payload = {
+            'channel': self.victim_channel.pk,
+            'playlist_id': 'PL_hacked_playlist_1',
+            'title': 'Hacked Playlist'
+        }
+        response = self.client.post(url, payload)
+        self.assertIn(response.status_code, [status.HTTP_400_BAD_REQUEST, status.HTTP_403_FORBIDDEN])
+        self.assertFalse(YouTubePlaylist.objects.filter(playlist_id='PL_hacked_playlist_1').exists())
+
+    def test_create_video_idor_blocked(self):
+        # Attacker tries to inject a video into Victim's channel
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.attacker_token.key}')
+        url = reverse('youtube-video-list')
+        payload = {
+            'channel': self.victim_channel.pk,
+            'video_id': 'hacked_vid1',
+            'title': 'Hacked Video'
+        }
+        response = self.client.post(url, payload)
+        self.assertIn(response.status_code, [status.HTTP_400_BAD_REQUEST, status.HTTP_403_FORBIDDEN])
+        self.assertFalse(YouTubeVideo.objects.filter(video_id='hacked_vid1').exists())
+
+    def test_channel_id_regex_sanitization(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.attacker_token.key}')
+        url = reverse('youtube-channel-list')
+        payload = {
+            'channel_id': 'UC_bad<script>alert(1)</script>',
+            'title': 'XSS Attack Channel'
+        }
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(YouTubeChannel.objects.filter(title='XSS Attack Channel').exists())
+
+
+

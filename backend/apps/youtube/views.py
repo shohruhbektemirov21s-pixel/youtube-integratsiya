@@ -79,6 +79,14 @@ class YouTubePlaylistViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(channel__channel_id=channel_id)
         return queryset
 
+    def perform_create(self, serializer):
+        channel = serializer.validated_data.get('channel')
+        if channel and channel.owner != self.request.user and not self.request.user.is_staff:
+            raise permissions.exceptions.PermissionDenied(
+                "Siz ushbu kanalga playlist qo'shish huquqiga ega emassiz."
+            )
+        serializer.save()
+
 
 class YouTubeVideoViewSet(viewsets.ModelViewSet):
     """
@@ -108,6 +116,14 @@ class YouTubeVideoViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(privacy_status=privacy)
 
         return queryset
+
+    def perform_create(self, serializer):
+        channel = serializer.validated_data.get('channel')
+        if channel and channel.owner != self.request.user and not self.request.user.is_staff:
+            raise permissions.exceptions.PermissionDenied(
+                "Siz ushbu kanalga video qo'shish huquqiga ega emassiz."
+            )
+        serializer.save()
 
     @action(detail=False, methods=['get'])
     def statistics(self, request):

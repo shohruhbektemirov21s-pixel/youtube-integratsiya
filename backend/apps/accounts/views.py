@@ -5,11 +5,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.authtoken.models import Token
+from rest_framework.throttling import AnonRateThrottle
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+
+
+class AuthRateThrottle(AnonRateThrottle):
+    scope = 'auth'
+    rate = '20/minute'
 
 
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -42,6 +49,7 @@ class RegisterView(APIView):
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)

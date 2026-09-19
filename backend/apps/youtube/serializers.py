@@ -1,9 +1,13 @@
 """
 Serializers for YouTube Channels, Playlists, Videos, and Sync Jobs.
-Enforces strict input validation and field security.
+Enforces strict input validation, regex sanitization, and IDOR prevention.
 """
+import re
 from rest_framework import serializers
 from .models import YouTubeChannel, YouTubePlaylist, YouTubeVideo, SyncJob
+
+# YouTube identifier format regex: alphanumeric, underscores, hyphens
+YOUTUBE_ID_PATTERN = re.compile(r'^[a-zA-Z0-9_\-]+$')
 
 
 class YouTubeChannelSerializer(serializers.ModelSerializer):
@@ -44,8 +48,10 @@ class YouTubeChannelSerializer(serializers.ModelSerializer):
         cleaned = value.strip()
         if not cleaned:
             raise serializers.ValidationError("Kanal ID bo'sh bo'lishi mumkin emas.")
-        if len(cleaned) < 10:
-            raise serializers.ValidationError("Kanal ID uzunligi kamida 10 ta belgidan iborat bo'lishi kerak.")
+        if len(cleaned) < 10 or len(cleaned) > 64:
+            raise serializers.ValidationError("Kanal ID uzunligi 10 dan 64 gacha belgi bo'lishi kerak.")
+        if not YOUTUBE_ID_PATTERN.match(cleaned):
+            raise serializers.ValidationError("Kanal ID faqat lotin harflari, sonlar, chiziqcha va pastki chiziqdan iborat bo'lishi kerak.")
         return cleaned
 
     def validate_title(self, value):
@@ -77,10 +83,20 @@ class YouTubePlaylistSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'channel_title']
 
+    def validate_channel(self, value):
+        # Prevent IDOR: Ensure caller owns the channel
+        request = self.context.get('request')
+        if request and request.user and not request.user.is_staff:
+            if value.owner != request.user:
+                raise serializers.ValidationError("Siz faqat o'zingizga tegishli kanalga playlist qo'sha olasiz.")
+        return value
+
     def validate_playlist_id(self, value):
         cleaned = value.strip()
         if not cleaned:
             raise serializers.ValidationError("Playlist ID bo'sh bo'lishi mumkin emas.")
+        if not YOUTUBE_ID_PATTERN.match(cleaned):
+            raise serializers.ValidationError("Playlist ID faqat harflar, sonlar va chiziqchalardan iborat bo'lishi kerak.")
         return cleaned
 
 
@@ -114,6 +130,14 @@ class YouTubeVideoSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'channel_title', 'playlist_title']
 
+    def validate_channel(self, value):
+        # Prevent IDOR: Ensure caller owns the channel
+        request = self.context.get('request')
+        if request and request.user and not request.user.is_staff:
+            if value.owner != request.user:
+                raise serializers.ValidationError("Siz faqat o'zingizga tegishli kanalga video qo'sha olasiz.")
+        return value
+
     def get_formatted_duration(self, obj) -> str:
         total_seconds = obj.duration_seconds or 0
         minutes, seconds = divmod(total_seconds, 60)
@@ -127,7 +151,9 @@ class YouTubeVideoSerializer(serializers.ModelSerializer):
         if not cleaned:
             raise serializers.ValidationError("Video ID bo'sh bo'lishi mumkin emas.")
         if len(cleaned) != 11:
-            raise serializers.ValidationError("YouTube Video ID odatda 11 ta belgidan iborat bo'ladi.")
+            raise serializers.ValidationError("YouTube Video ID 11 ta belgidan iborat bo'lishi kerak.")
+        if not YOUTUBE_ID_PATTERN.match(cleaned):
+            raise serializers.ValidationError("Video ID da ruxsat etilmagan belgilar mavjud.")
         return cleaned
 
 

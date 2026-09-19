@@ -7,103 +7,140 @@ interface NavbarProps {
 }
 
 export function Navbar({ activeTab, onTabChange, backendOnline }: NavbarProps) {
-  const navItemStyle = (tab: NavTab) => ({
-    padding: '0.5rem 1rem',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: activeTab === tab ? '#2563eb' : 'transparent',
-    color: activeTab === tab ? '#ffffff' : '#475569',
-    fontWeight: 500,
-    cursor: 'pointer',
-    fontSize: '0.9rem',
-    transition: 'all 0.15s ease',
-  });
-
   return (
-    <header
-      style={{
-        backgroundColor: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
-        padding: '0.75rem 1.5rem',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '1.75rem' }}>📺</span>
-          <div>
-            <h1 style={{ fontSize: '1.2rem', margin: 0, color: '#0f172a', fontWeight: 700 }}>
-              YouTube AI Studio
-            </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.1rem' }}>
-              <span
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: backendOnline ? '#16a34a' : '#ef4444',
-                }}
-              />
-              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                {backendOnline ? 'API Online' : 'API Ulanmagan'}
-              </span>
+    <>
+      {/* Top Glassmorphic Navigation Bar */}
+      <header className="app-header">
+        <div className="app-header-inner">
+          <div className="brand-section">
+            <div className="brand-logo">📺</div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <h1 className="brand-title">YouTube AI Studio</h1>
+                <div className="brand-badge">
+                  <span className="pulse-dot" />
+                  <span>{backendOnline ? '24/7 Server Faol' : 'Oflayn'}</span>
+                </div>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                Hermes Agent • Flow AI 4x • Gemini 3.8 Flash • 19:00 Drop
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Nav Pills */}
+          <nav className="desktop-nav">
+            <button
+              type="button"
+              className={`nav-pill-btn ${activeTab === 'automation' ? 'active' : ''}`}
+              onClick={() => onTabChange('automation')}
+            >
+              <span>⚡️</span> Boshqaruv & Flow AI
+            </button>
+            <button
+              type="button"
+              className={`nav-pill-btn ${activeTab === 'accounts' ? 'active' : ''}`}
+              onClick={() => onTabChange('accounts')}
+            >
+              <span>👥</span> Akkauntlar (Kredit & Kanal)
+            </button>
+            <button
+              type="button"
+              className={`nav-pill-btn ${activeTab === 'channels' ? 'active' : ''}`}
+              onClick={() => onTabChange('channels')}
+            >
+              <span>📺</span> Kanallar
+            </button>
+            <button
+              type="button"
+              className={`nav-pill-btn ${activeTab === 'videos' ? 'active' : ''}`}
+              onClick={() => onTabChange('videos')}
+            >
+              <span>🎬</span> Videolar
+            </button>
+            <button
+              type="button"
+              className={`nav-pill-btn ${activeTab === 'sync' ? 'active' : ''}`}
+              onClick={() => onTabChange('sync')}
+            >
+              <span>📋</span> Audit
+            </button>
+            <button
+              type="button"
+              className={`nav-pill-btn ${activeTab === 'system' ? 'active' : ''}`}
+              onClick={() => onTabChange('system')}
+            >
+              <span>⚙️</span> Tizim
+            </button>
+          </nav>
+
+          {/* Right Status Badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.35rem 0.75rem',
+                background: 'rgba(59, 130, 246, 0.1)',
+                border: '1px solid rgba(59, 130, 246, 0.25)',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                color: '#60a5fa',
+              }}
+            >
+              <span>👑</span>
+              <span>Admin Rejimi</span>
             </div>
           </div>
         </div>
+      </header>
 
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button type="button" style={navItemStyle('automation')} onClick={() => onTabChange('automation')}>
-            ⚡️ Avtomatlashtirish & Flow AI
-          </button>
-          <button type="button" style={navItemStyle('accounts')} onClick={() => onTabChange('accounts')}>
-            👥 Akkauntlar (Kredit & Kanal)
-          </button>
-          <button type="button" style={navItemStyle('channels')} onClick={() => onTabChange('channels')}>
-            Kanallar
-          </button>
-          <button type="button" style={navItemStyle('videos')} onClick={() => onTabChange('videos')}>
-            Videolar
-          </button>
-          <button type="button" style={navItemStyle('sync')} onClick={() => onTabChange('sync')}>
-            Audit Jurnali
-          </button>
-          <button type="button" style={navItemStyle('system')} onClick={() => onTabChange('system')}>
-            Tizim Holati
-          </button>
-        </nav>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <div
-            style={{
-              padding: '0.4rem 0.85rem',
-              backgroundColor: '#f1f5f9',
-              borderRadius: '20px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              color: '#334155',
-              border: '1px solid #cbd5e1',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-            }}
-          >
-            <span>👑</span>
-            <span>Shaxsiy Boshqaruv</span>
-          </div>
-        </div>
-      </div>
-    </header>
+      {/* Mobile Bottom Navigation Dock (Telegram Mini App Friendly) */}
+      <nav className="mobile-bottom-nav">
+        <button
+          type="button"
+          className={`bottom-nav-item ${activeTab === 'automation' ? 'active' : ''}`}
+          onClick={() => onTabChange('automation')}
+        >
+          <span className="icon">⚡️</span>
+          <span>Boshqaruv</span>
+        </button>
+        <button
+          type="button"
+          className={`bottom-nav-item ${activeTab === 'accounts' ? 'active' : ''}`}
+          onClick={() => onTabChange('accounts')}
+        >
+          <span className="icon">👥</span>
+          <span>Akkauntlar</span>
+        </button>
+        <button
+          type="button"
+          className={`bottom-nav-item ${activeTab === 'channels' ? 'active' : ''}`}
+          onClick={() => onTabChange('channels')}
+        >
+          <span className="icon">📺</span>
+          <span>Kanallar</span>
+        </button>
+        <button
+          type="button"
+          className={`bottom-nav-item ${activeTab === 'videos' ? 'active' : ''}`}
+          onClick={() => onTabChange('videos')}
+        >
+          <span className="icon">🎬</span>
+          <span>Videolar</span>
+        </button>
+        <button
+          type="button"
+          className={`bottom-nav-item ${activeTab === 'system' ? 'active' : ''}`}
+          onClick={() => onTabChange('system')}
+        >
+          <span className="icon">⚙️</span>
+          <span>Tizim</span>
+        </button>
+      </nav>
+    </>
   );
 }
+export default Navbar;

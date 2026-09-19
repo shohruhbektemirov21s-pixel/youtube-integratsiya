@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { youtubeService } from '../../services/youtubeService';
 import type { FlowAIAccount, DetectedProfile } from '../../types/youtube';
 
+type AccountFilter = 'all' | 'credits' | 'channels';
+
 export function AccountManagement() {
   const [accounts, setAccounts] = useState<FlowAIAccount[]>([]);
   const [detectedProfiles, setDetectedProfiles] = useState<DetectedProfile[]>([]);
@@ -9,6 +11,8 @@ export function AccountManagement() {
   const [inspectingId, setInspectingId] = useState<number | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [editingAccount, setEditingAccount] = useState<FlowAIAccount | null>(null);
+  const [activeFilter, setActiveFilter] = useState<AccountFilter>('all');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Form states
   const [name, setName] = useState('');
@@ -20,9 +24,14 @@ export function AccountManagement() {
   const [youtubeChannelName, setYoutubeChannelName] = useState('');
   const [youtubeChannelId, setYoutubeChannelId] = useState('');
 
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
   const loadData = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const [accRes, profRes] = await Promise.all([
         youtubeService.getFlowAccounts(),
         youtubeService.getDetectedChromeProfiles(),
@@ -57,8 +66,10 @@ export function AccountManagement() {
 
       if (editingAccount) {
         await youtubeService.updateFlowAccount(editingAccount.id, payload);
+        showToast(`✓ '${name}' muvaffaqiyatli tahrirlandi!`);
       } else {
         await youtubeService.createFlowAccount(payload);
+        showToast(`✓ Yangi akkaunt '${name}' qo'shildi!`);
       }
 
       setIsAddModalOpen(false);
@@ -66,7 +77,7 @@ export function AccountManagement() {
       resetForm();
       await loadData();
     } catch (err) {
-      alert('Akkauntni saqlashda xatolik yuz berdi: ' + (err as Error).message);
+      showToast('Xatolik: ' + (err as Error).message);
     }
   };
 
@@ -82,9 +93,10 @@ export function AccountManagement() {
         has_youtube_channel: false,
         is_active: true,
       });
+      showToast(`✓ Chrome profili (${p.profile_dir}) ulandi!`);
       await loadData();
     } catch (err) {
-      alert('Profilni qoʻshishda xatolik: ' + (err as Error).message);
+      showToast('Xatolik: ' + (err as Error).message);
     }
   };
 
@@ -96,21 +108,23 @@ export function AccountManagement() {
         has_flow_credits: acc.credits_remaining > 0,
         has_youtube_channel: acc.has_youtube_channel,
       });
+      showToast(`✓ '${acc.name}' brauzer holati yangilandi!`);
       await loadData();
     } catch (err) {
-      alert('Tekshirishda xatolik: ' + (err as Error).message);
+      showToast('Tekshirishda xatolik: ' + (err as Error).message);
     } finally {
       setInspectingId(null);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Ushbu akkauntni oʻchirishga ishonchingiz komilmi?')) return;
+  const handleDelete = async (id: number, accName: string) => {
+    if (!confirm(`'${accName}' akkauntini o'chirishni tasdiqlaysizmi?`)) return;
     try {
       await youtubeService.deleteFlowAccount(id);
+      showToast(`🗑 '${accName}' o'chirildi.`);
       await loadData();
     } catch (err) {
-      alert('Oʻchirishda xatolik: ' + (err as Error).message);
+      showToast('Oʻchirishda xatolik: ' + (err as Error).message);
     }
   };
 
@@ -138,268 +152,294 @@ export function AccountManagement() {
     setYoutubeChannelId('');
   };
 
+  // Filter accounts
+  const filteredAccounts = accounts.filter((acc) => {
+    if (activeFilter === 'credits') return acc.has_flow_credits && acc.credits_remaining > 0;
+    if (activeFilter === 'channels') return acc.has_youtube_channel;
+    return true;
+  });
+
+  const totalCredits = accounts.reduce((sum, a) => sum + (a.credits_remaining || 0), 0);
+  const channelsCount = accounts.filter((a) => a.has_youtube_channel).length;
+
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1.5rem',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
-      >
-        <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
-            👥 Mening Akkauntlarim (Flow AI & YouTube)
-          </h2>
-          <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '0.35rem' }}>
-            Qaysi akkauntda Flow AI krediti borligi va qaysi birida YouTube kanal mavjudligini mustaqil belgilang va boshqaring.
-          </p>
+    <div>
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="senior-toast">
+          <span>✨</span>
+          <span>{toastMessage}</span>
         </div>
+      )}
+
+      {/* Cockpit Hero Banner */}
+      <div className="cockpit-banner">
+        <div className="cockpit-header">
+          <div className="cockpit-title-group">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+              <span style={{ fontSize: '1.4rem' }}>👥</span>
+              <h2>Mening Akkauntlarim & Profillar</h2>
+            </div>
+            <p>
+              Qaysi akkauntda Flow AI krediti mavjudligi va qaysi birida YouTube kanal borligini to'liq nazorat qiling. Ro'yxatdan o'tishsiz to'g'ridan-to'g'ri ishlang.
+            </p>
+          </div>
+
+          <div className="cockpit-actions">
+            <button
+              type="button"
+              className="btn-senior-primary"
+              onClick={() => {
+                resetForm();
+                setEditingAccount(null);
+                setIsAddModalOpen(true);
+              }}
+            >
+              <span>➕</span> Yangi Akkaunt Kiritish
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick KPI Stat Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1.75rem' }}>
+        <div
+          className="senior-card"
+          onClick={() => setActiveFilter('all')}
+          style={{ cursor: 'pointer', border: activeFilter === 'all' ? '1px solid var(--accent-primary)' : undefined }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>JAMI AKKAUNTLAR</span>
+            <span style={{ fontSize: '1.25rem' }}>📁</span>
+          </div>
+          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#ffffff', margin: '0.35rem 0' }}>
+            {accounts.length} ta
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--accent-success)' }}>Barchasi tizimga ulangan</div>
+        </div>
+
+        <div
+          className="senior-card"
+          onClick={() => setActiveFilter('credits')}
+          style={{ cursor: 'pointer', border: activeFilter === 'credits' ? '1px solid #3b82f6' : undefined }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>FLOW AI KREDITLARI</span>
+            <span style={{ fontSize: '1.25rem' }}>⚡️</span>
+          </div>
+          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#38bdf8', margin: '0.35rem 0' }}>
+            {totalCredits} kredit
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            {accounts.filter((a) => a.has_flow_credits && a.credits_remaining > 0).length} ta akkauntda mavjud
+          </div>
+        </div>
+
+        <div
+          className="senior-card"
+          onClick={() => setActiveFilter('channels')}
+          style={{ cursor: 'pointer', border: activeFilter === 'channels' ? '1px solid #ef4444' : undefined }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>YOUTUBE KANALLAR</span>
+            <span style={{ fontSize: '1.25rem' }}>📺</span>
+          </div>
+          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#f87171', margin: '0.35rem 0' }}>
+            {channelsCount} ta kanal
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            19:00 avto-yuklashga sozlangan
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
         <button
           type="button"
-          onClick={() => {
-            resetForm();
-            setEditingAccount(null);
-            setIsAddModalOpen(true);
-          }}
-          style={{
-            padding: '0.6rem 1.25rem',
-            backgroundColor: '#2563eb',
-            color: '#ffffff',
-            borderRadius: '8px',
-            border: 'none',
-            fontWeight: 600,
-            cursor: 'pointer',
-            boxShadow: '0 2px 4px rgba(37,99,235,0.2)',
-          }}
+          className={`nav-pill-btn ${activeFilter === 'all' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('all')}
         >
-          ➕ Yangi Akkaunt Kiritish
+          Barchasi ({accounts.length})
+        </button>
+        <button
+          type="button"
+          className={`nav-pill-btn ${activeFilter === 'credits' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('credits')}
+        >
+          ⚡️ Kredit Bor ({accounts.filter((a) => a.has_flow_credits && a.credits_remaining > 0).length})
+        </button>
+        <button
+          type="button"
+          className={`nav-pill-btn ${activeFilter === 'channels' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('channels')}
+        >
+          📺 YouTube Kanal Ulangan ({channelsCount})
         </button>
       </div>
 
-      {/* Summary Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '1rem',
-          marginBottom: '2rem',
-        }}
-      >
-        <div style={{ backgroundColor: '#ffffff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>JAMI AKKAUNTLAR</div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0f172a', marginTop: '0.25rem' }}>
-            {accounts.length} ta
-          </div>
-          <div style={{ fontSize: '0.8rem', color: '#16a34a', marginTop: '0.25rem' }}>Barchasi tizimga ulangan</div>
-        </div>
-
-        <div style={{ backgroundColor: '#ffffff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>⚡️ KREDIT MAVJUD AKKAUNTLAR</div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#2563eb', marginTop: '0.25rem' }}>
-            {accounts.filter((a) => a.has_flow_credits && a.credits_remaining > 0).length} ta
-          </div>
-          <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.25rem' }}>
-            Jami: {accounts.reduce((sum, a) => sum + (a.credits_remaining || 0), 0)} kredit
-          </div>
-        </div>
-
-        <div style={{ backgroundColor: '#ffffff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>📺 YOUTUBE KANAL MAVJUD AKKAUNTLAR</div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#dc2626', marginTop: '0.25rem' }}>
-            {accounts.filter((a) => a.has_youtube_channel).length} ta
-          </div>
-          <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.25rem' }}>
-            {accounts.find((a) => a.has_youtube_channel)?.youtube_channel_name || 'Asosiy kanal ulangan'}
-          </div>
-        </div>
-      </div>
-
-      {/* Account List Grid */}
+      {/* Account Cards Grid */}
       <div style={{ marginBottom: '2.5rem' }}>
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#1e293b', marginBottom: '1rem' }}>
-          📋 Faol Akkauntlar Ro'yxati
-        </h3>
-
         {loading ? (
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Akkauntlar yuklanmoqda...</div>
-        ) : accounts.length === 0 ? (
-          <div style={{ padding: '2rem', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: '12px' }}>
-            Akkauntlar mavjud emas. Quyidagi Chrome profillaridan qo'shing yoki yangi akkaunt kiriting.
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+            Akkauntlar yuklanmoqda...
+          </div>
+        ) : filteredAccounts.length === 0 ? (
+          <div style={{ padding: '2.5rem', textAlign: 'center', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
+            Tanlangan filtr bo'yicha akkaunt topilmadi.
           </div>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-              gap: '1.25rem',
-            }}
-          >
-            {accounts.map((acc) => (
-              <div
-                key={acc.id}
-                style={{
-                  backgroundColor: '#ffffff',
-                  borderRadius: '12px',
-                  border: '1px solid #e2e8f0',
-                  padding: '1.25rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.75rem',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  position: 'relative',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div className="senior-grid">
+            {filteredAccounts.map((acc) => {
+              const initialLetter = acc.name ? acc.name.charAt(0).toUpperCase() : 'A';
+              const percent = Math.round((acc.credits_remaining / (acc.initial_credits || 1000)) * 100);
+
+              return (
+                <div key={acc.id} className="senior-card">
                   <div>
-                    <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>
-                      {acc.name}
-                    </h4>
-                    <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.15rem' }}>
-                      {acc.email || 'Email belgilanmagan'}
-                    </div>
-                  </div>
-                  <span
-                    style={{
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: '20px',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      backgroundColor: '#f1f5f9',
-                      color: '#475569',
-                      border: '1px solid #cbd5e1',
-                    }}
-                  >
-                    📁 {acc.profile_dir}
-                  </span>
-                </div>
+                    {/* Top Identity Row */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div className="account-avatar">{initialLetter}</div>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>
+                            {acc.name}
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                            {acc.email || 'Email biriktirilmagan'}
+                          </div>
+                        </div>
+                      </div>
 
-                {/* Badges: Credit and Channel */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  {/* Flow AI Credit Row */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '0.6rem 0.75rem',
-                      backgroundColor: acc.has_flow_credits && acc.credits_remaining > 0 ? '#f0fdf4' : '#f8fafc',
-                      borderRadius: '8px',
-                      border: acc.has_flow_credits && acc.credits_remaining > 0 ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '1.1rem' }}>⚡️</span>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#166534' }}>
-                        Flow AI Krediti:
+                      <span
+                        style={{
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: 'var(--radius-full)',
+                          background: 'rgba(255, 255, 255, 0.06)',
+                          color: 'var(--text-secondary)',
+                          border: '1px solid var(--border-color)',
+                        }}
+                      >
+                        📁 {acc.profile_dir}
                       </span>
                     </div>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: acc.has_flow_credits ? '#15803d' : '#94a3b8' }}>
-                      {acc.has_flow_credits ? `${acc.credits_remaining} / ${acc.initial_credits}` : 'Mavjud emas'}
-                    </span>
-                  </div>
 
-                  {/* YouTube Channel Row */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '0.6rem 0.75rem',
-                      backgroundColor: acc.has_youtube_channel ? '#fef2f2' : '#f8fafc',
-                      borderRadius: '8px',
-                      border: acc.has_youtube_channel ? '1px solid #fecaca' : '1px solid #e2e8f0',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '1.1rem' }}>📺</span>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#991b1b' }}>
-                        YouTube Kanal:
-                      </span>
+                    {/* Flow AI Credit Meter */}
+                    <div
+                      style={{
+                        background: 'rgba(15, 23, 42, 0.6)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '0.85rem',
+                        marginBottom: '0.75rem',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', fontWeight: 600, color: '#38bdf8' }}>
+                          <span>⚡️</span>
+                          <span>Flow AI Krediti</span>
+                        </div>
+                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: acc.has_flow_credits && acc.credits_remaining > 0 ? '#10b981' : '#ef4444' }}>
+                          {acc.has_flow_credits ? `${acc.credits_remaining} / ${acc.initial_credits}` : 'Kredit Yo\'q'}
+                        </span>
+                      </div>
+
+                      <div className="metric-progress-track">
+                        <div
+                          className={`metric-progress-bar ${percent > 50 ? 'success' : percent > 15 ? '' : 'warning'}`}
+                          style={{ width: `${Math.max(4, percent)}%` }}
+                        />
+                      </div>
                     </div>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: acc.has_youtube_channel ? '#b91c1c' : '#94a3b8' }}>
-                      {acc.has_youtube_channel ? acc.youtube_channel_name || 'Kanal mavjud' : 'Kanal ulanmagan'}
-                    </span>
+
+                    {/* YouTube Channel Status */}
+                    <div
+                      style={{
+                        background: acc.has_youtube_channel ? 'rgba(239, 68, 68, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                        border: `1px solid ${acc.has_youtube_channel ? 'rgba(239, 68, 68, 0.25)' : 'var(--border-color)'}`,
+                        borderRadius: 'var(--radius-md)',
+                        padding: '0.85rem',
+                        marginBottom: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                        <span style={{ fontSize: '1.1rem' }}>📺</span>
+                        <div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 600, color: acc.has_youtube_channel ? '#f87171' : 'var(--text-muted)' }}>
+                            {acc.has_youtube_channel ? 'YouTube Kanal Ulangan' : 'Kanal Ulanmagan'}
+                          </div>
+                          {acc.has_youtube_channel && acc.youtube_channel_name && (
+                            <div style={{ fontSize: '0.75rem', color: '#ffffff', fontWeight: 500 }}>
+                              {acc.youtube_channel_name}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {acc.has_youtube_channel && acc.youtube_subscribers > 0 && (
+                        <span style={{ fontSize: '0.75rem', color: '#f87171', fontWeight: 700 }}>
+                          {acc.youtube_subscribers.toLocaleString()} obunachi
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions Bar */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.85rem' }}>
+                    <button
+                      type="button"
+                      className="btn-senior-secondary"
+                      onClick={() => handleInspect(acc)}
+                      disabled={inspectingId === acc.id}
+                      style={{ flex: 1, padding: '0.45rem 0.6rem', fontSize: '0.8rem', justifyContent: 'center' }}
+                    >
+                      <span>🔍</span>
+                      <span>{inspectingId === acc.id ? 'Tekshirilmoqda...' : 'Tekshirish'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-senior-secondary"
+                      onClick={() => openEdit(acc)}
+                      style={{ padding: '0.45rem 0.75rem', fontSize: '0.8rem' }}
+                      title="Tahrirlash"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-senior-danger"
+                      onClick={() => handleDelete(acc.id, acc.name)}
+                      title="O'chirish"
+                    >
+                      🗑
+                    </button>
                   </div>
                 </div>
-
-                {/* Actions */}
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => handleInspect(acc)}
-                    disabled={inspectingId === acc.id}
-                    style={{
-                      flex: 1,
-                      padding: '0.45rem',
-                      backgroundColor: '#eff6ff',
-                      color: '#2563eb',
-                      border: '1px solid #bfdbfe',
-                      borderRadius: '6px',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {inspectingId === acc.id ? 'Tekshirilmoqda...' : '🔍 Tekshirish'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openEdit(acc)}
-                    style={{
-                      padding: '0.45rem 0.75rem',
-                      backgroundColor: '#f8fafc',
-                      color: '#475569',
-                      border: '1px solid #cbd5e1',
-                      borderRadius: '6px',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    ✏️ Tahrirlash
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(acc.id)}
-                    style={{
-                      padding: '0.45rem 0.75rem',
-                      backgroundColor: '#fef2f2',
-                      color: '#dc2626',
-                      border: '1px solid #fecaca',
-                      borderRadius: '6px',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    🗑
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* Auto-detected Chrome Profiles on Computer */}
-      <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      {/* Computer Chrome Profiles Auto-Discovery */}
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
-              🌐 Kompyuterdagi Google Chrome Profillari (Aniqlangan)
+            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>
+              🌐 Kompyuterdagi Google Chrome Profillari ({detectedProfiles.length} ta)
             </h3>
-            <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-              Quyidagi profillardan birini bitta bosish orqali tizimga tezkor qo'shishingiz mumkin:
+            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              Kali Linux tizimidagi barcha profillar avtomatik aniqlandi. 1 ta bosish orqali boshqaruvga ulang:
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.75rem' }}>
           {detectedProfiles.map((p) => {
             const alreadyAdded = accounts.some((a) => a.profile_dir === p.profile_dir);
             return (
@@ -409,36 +449,41 @@ export function AccountManagement() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '0.75rem 1rem',
-                  backgroundColor: '#f8fafc',
-                  borderRadius: '8px',
-                  border: '1px solid #e2e8f0',
+                  padding: '0.75rem 0.9rem',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-md)',
                 }}
               >
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>
-                    {p.name} ({p.profile_dir})
+                  <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#ffffff' }}>
+                    {p.name}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{p.email || 'Email yoʻq'}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    📁 {p.profile_dir} • {p.email || 'Email yoʻq'}
+                  </div>
                 </div>
+
                 {alreadyAdded ? (
-                  <span style={{ fontSize: '0.8rem', color: '#16a34a', fontWeight: 600 }}>✓ Ulangan</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--accent-success)', fontWeight: 600 }}>
+                    ✓ Ulangan
+                  </span>
                 ) : (
                   <button
                     type="button"
                     onClick={() => handleQuickAddFromDetected(p)}
                     style={{
-                      padding: '0.35rem 0.75rem',
-                      backgroundColor: '#2563eb',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontSize: '0.8rem',
+                      background: 'rgba(59, 130, 246, 0.15)',
+                      color: '#60a5fa',
+                      border: '1px solid rgba(59, 130, 246, 0.3)',
+                      padding: '0.3rem 0.65rem',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '0.75rem',
                       fontWeight: 600,
                       cursor: 'pointer',
                     }}
                   >
-                    ➕ Qo'shish
+                    ➕ Ulash
                   </button>
                 )}
               </div>
@@ -449,35 +494,24 @@ export function AccountManagement() {
 
       {/* Add / Edit Modal */}
       {isAddModalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '1rem',
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '16px',
-              maxWidth: '500px',
-              width: '100%',
-              padding: '1.75rem',
-              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-            }}
-          >
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, marginBottom: '1.25rem', color: '#0f172a' }}>
-              {editingAccount ? '✏️ Akkauntni Tahrirlash' : '➕ Yangi Akkaunt Qoʻshish'}
-            </h3>
+        <div className="modal-overlay" onClick={() => setIsAddModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#ffffff' }}>
+                {editingAccount ? '✏️ Akkauntni Tahrirlash' : '➕ Yangi Akkaunt Qoʻshish'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.25rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
 
             <form onSubmit={handleSaveAccount} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
                   Akkaunt Nomi
                 </label>
                 <input
@@ -486,12 +520,12 @@ export function AccountManagement() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Masalan: Ustaai (Asosiy)"
-                  style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+                  className="modal-input"
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
                   Email manzili
                 </label>
                 <input
@@ -499,18 +533,18 @@ export function AccountManagement() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="masalan: user@gmail.com"
-                  style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+                  className="modal-input"
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem' }}>
-                  Chrome Profil Katalogi
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                  Google Chrome Profili
                 </label>
                 <select
                   value={profileDir}
                   onChange={(e) => setProfileDir(e.target.value)}
-                  style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', backgroundColor: '#fff' }}
+                  className="modal-input"
                 >
                   <option value="Profile 1">Profile 1 (Ustaai)</option>
                   <option value="Profile 3">Profile 3 (Samik)</option>
@@ -526,9 +560,16 @@ export function AccountManagement() {
                 </select>
               </div>
 
-              {/* Flow AI Credit Settings */}
-              <div style={{ padding: '0.75rem', backgroundColor: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: '#166534', cursor: 'pointer' }}>
+              {/* Flow AI Credit Checkbox & Input */}
+              <div
+                style={{
+                  background: 'rgba(16, 185, 129, 0.08)',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.85rem',
+                }}
+              >
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: '#34d399', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
                     checked={hasFlowCredits}
@@ -536,24 +577,32 @@ export function AccountManagement() {
                   />
                   ⚡️ Ushbu akkauntda Flow AI kreditlari bor
                 </label>
+
                 {hasFlowCredits && (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <label style={{ fontSize: '0.8rem', color: '#15803d', display: 'block', marginBottom: '0.2rem' }}>
-                      Mavjud kredit miqdori:
+                  <div style={{ marginTop: '0.6rem' }}>
+                    <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>
+                      Mavjud kreditlar miqdori:
                     </label>
                     <input
                       type="number"
                       value={creditsRemaining}
                       onChange={(e) => setCreditsRemaining(Number(e.target.value))}
-                      style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #bbf7d0' }}
+                      className="modal-input"
                     />
                   </div>
                 )}
               </div>
 
-              {/* YouTube Channel Settings */}
-              <div style={{ padding: '0.75rem', backgroundColor: '#fef2f2', borderRadius: '8px', border: '1px solid #fecaca' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: '#991b1b', cursor: 'pointer' }}>
+              {/* YouTube Channel Checkbox & Input */}
+              <div
+                style={{
+                  background: 'rgba(239, 68, 68, 0.08)',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.85rem',
+                }}
+              >
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: '#f87171', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
                     checked={hasYoutubeChannel}
@@ -561,20 +610,19 @@ export function AccountManagement() {
                   />
                   📺 Ushbu akkauntda YouTube kanal bor
                 </label>
+
                 {hasYoutubeChannel && (
-                  <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div>
-                      <label style={{ fontSize: '0.8rem', color: '#991b1b', display: 'block', marginBottom: '0.2rem' }}>
-                        YouTube Kanal Nomi:
-                      </label>
-                      <input
-                        type="text"
-                        value={youtubeChannelName}
-                        onChange={(e) => setYoutubeChannelName(e.target.value)}
-                        placeholder="Masalan: Google Developers yoki Ustaai AI"
-                        style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #fecaca' }}
-                      />
-                    </div>
+                  <div style={{ marginTop: '0.6rem' }}>
+                    <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>
+                      Kanal Nomi:
+                    </label>
+                    <input
+                      type="text"
+                      value={youtubeChannelName}
+                      onChange={(e) => setYoutubeChannelName(e.target.value)}
+                      placeholder="Masalan: Google Developers yoki Ustaai AI"
+                      className="modal-input"
+                    />
                   </div>
                 )}
               </div>
@@ -582,31 +630,12 @@ export function AccountManagement() {
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
                 <button
                   type="button"
+                  className="btn-senior-secondary"
                   onClick={() => setIsAddModalOpen(false)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: '#f1f5f9',
-                    color: '#475569',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '8px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                  }}
                 >
                   Bekor qilish
                 </button>
-                <button
-                  type="submit"
-                  style={{
-                    padding: '0.5rem 1.25rem',
-                    backgroundColor: '#2563eb',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
+                <button type="submit" className="btn-senior-primary">
                   Saqlash
                 </button>
               </div>

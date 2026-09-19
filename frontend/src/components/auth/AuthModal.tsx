@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Modal } from '../common/Modal';
 import { ErrorMessage } from '../common/ErrorMessage';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { ApiError } from '../../services/api';
 
 interface AuthModalProps {

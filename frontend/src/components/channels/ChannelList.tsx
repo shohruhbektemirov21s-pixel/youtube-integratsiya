@@ -4,7 +4,7 @@ import { Spinner } from '../common/Spinner';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { EmptyState } from '../common/EmptyState';
 import { AddChannelModal } from './AddChannelModal';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { ApiError } from '../../services/api';
 import type { YouTubeChannel } from '../../types/youtube';
 

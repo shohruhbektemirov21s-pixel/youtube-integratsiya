@@ -26,7 +26,6 @@ export interface ChannelCreatePayload {
   title: string;
   description?: string;
   custom_url?: string;
-  api_key?: string;
 }
 
 export interface YouTubePlaylist {

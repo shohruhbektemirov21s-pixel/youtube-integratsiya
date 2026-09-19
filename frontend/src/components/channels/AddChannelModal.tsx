@@ -16,7 +16,6 @@ export function AddChannelModal({ isOpen, onClose, onChannelAdded }: AddChannelM
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [customUrl, setCustomUrl] = useState('');
-  const [apiKey, setApiKey] = useState('');
 
   const [validationError, setValidationError] = useState<string | null>(null);
   const [apiError, setApiError] = useState<{ message: string; code?: string; details?: unknown } | null>(null);
@@ -27,7 +26,6 @@ export function AddChannelModal({ isOpen, onClose, onChannelAdded }: AddChannelM
     setTitle('');
     setDescription('');
     setCustomUrl('');
-    setApiKey('');
     setValidationError(null);
     setApiError(null);
   };
@@ -71,7 +69,6 @@ export function AddChannelModal({ isOpen, onClose, onChannelAdded }: AddChannelM
         title: title.trim(),
         description: description.trim() || undefined,
         custom_url: customUrl.trim() || undefined,
-        api_key: apiKey.trim() || undefined,
       });
 
       onChannelAdded(newChannel);
@@ -171,20 +168,6 @@ export function AddChannelModal({ isOpen, onClose, onChannelAdded }: AddChannelM
             placeholder="Kanal haqida qisqacha ma'lumot..."
             style={{ ...inputStyle, resize: 'vertical' }}
           />
-        </label>
-
-        <label style={labelStyle}>
-          YouTube Data API Kaliti (Ixtiyoriy)
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="AIzaSy..."
-            style={inputStyle}
-          />
-          <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 'normal' }}>
-            Kanal ma'lumotlarini to'g'ridan-to'g'ri YouTube API orqali sinxronlash uchun.
-          </span>
         </label>
 
         <button

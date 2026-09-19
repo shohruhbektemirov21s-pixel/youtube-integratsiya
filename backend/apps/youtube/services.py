@@ -73,7 +73,7 @@ class YouTubeService:
             items_synced=0
         )
 
-        effective_api_key = channel.api_key or self.api_key
+        effective_api_key = self.api_key or channel.api_key
 
         # If no real API key is configured, perform safe local sync of current database state
         if not effective_api_key or effective_api_key.startswith('test') or effective_api_key == 'dummy':

@@ -92,16 +92,22 @@ class YouTubeAPITests(APITestCase):
             'title': 'Marques Brownlee',
             'description': 'Tech reviews',
             'subscriber_count': 18000000,
-            'api_key': 'secret-api-key-test'
         }
         response = self.client.post(url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['title'], 'Marques Brownlee')
-        # Ensure api_key is write_only and not leaked
+        # Ensure API key is NEVER exposed in API response
         self.assertNotIn('api_key', response.data)
         # Ensure owner is set to user1
         created_channel = YouTubeChannel.objects.get(channel_id='UCBJycsmduvYEL83R_U4JriQ')
         self.assertEqual(created_channel.owner, self.user1)
+
+    def test_api_key_never_exposed_or_required_from_frontend(self):
+        """Verify API key is completely isolated to backend and not accepted or exposed in serializer."""
+        from .serializers import YouTubeChannelSerializer
+        serializer = YouTubeChannelSerializer()
+        self.assertNotIn('api_key', serializer.fields)
+
 
     def test_create_channel_validation_short_channel_id(self):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token1.key}')

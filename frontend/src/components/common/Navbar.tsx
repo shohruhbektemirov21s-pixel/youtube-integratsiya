@@ -1,4 +1,4 @@
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 
 export type NavTab = 'channels' | 'playlists' | 'videos' | 'sync' | 'system';
 

@@ -86,6 +86,14 @@ if DB_ENGINE == 'django.db.backends.postgresql':
             'PASSWORD': os.getenv('DB_PASSWORD', 'youtube_secure_pass_2026'),
             'HOST': os.getenv('DB_HOST', 'localhost'),
             'PORT': os.getenv('DB_PORT', '5432'),
+            'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
+            'ATOMIC_REQUESTS': False,
+            'OPTIONS': {
+                'connect_timeout': 10,
+            },
+            'TEST': {
+                'NAME': os.getenv('DB_TEST_NAME', 'youtube_test_db'),
+            },
         }
     }
 else:
@@ -93,6 +101,7 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
+            'ATOMIC_REQUESTS': False,
         }
     }
 
@@ -159,6 +168,9 @@ REST_FRAMEWORK = {
         'auth': '20/minute',
     },
 }
+
+# Google YouTube Data API v3 (Strictly Backend-only Secret)
+YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY', '')
 
 # CORS & CSRF configuration
 cors_origins_str = os.getenv(

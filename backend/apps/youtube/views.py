@@ -42,29 +42,20 @@ class YouTubeChannelViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, IsOwnerOrReadOnly])
     def trigger_sync(self, request, pk=None):
         """
-        Manually trigger a sync job for a specific YouTube channel.
+        Manually trigger a sync job for a specific YouTube channel using YouTubeService.
         """
+        from .services import YouTubeService
         channel = self.get_object()
-
-        job = SyncJob.objects.create(
-            channel=channel,
-            status=SyncJob.Status.IN_PROGRESS,
-            items_synced=0
-        )
-
-        # Record synchronization execution
-        job.status = SyncJob.Status.COMPLETED
-        job.items_synced = channel.videos.count()
-        job.completed_at = timezone.now()
-        job.save(update_fields=['status', 'items_synced', 'completed_at'])
+        service = YouTubeService()
+        job = service.sync_channel(channel)
 
         return Response(
             {
-                "success": True,
-                "message": f"'{channel.title}' kanali uchun sinxronizatsiya yakunlandi.",
+                "success": job.status != SyncJob.Status.FAILED,
+                "message": f"'{channel.title}' kanali uchun sinxronizatsiya {job.status}.",
                 "data": SyncJobSerializer(job).data
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK if job.status != SyncJob.Status.FAILED else status.HTTP_400_BAD_REQUEST
         )
 
 

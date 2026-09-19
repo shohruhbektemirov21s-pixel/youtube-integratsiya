@@ -226,6 +226,74 @@ class YouTubeAPITests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertFalse(response.data['success'])
-        self.assertIn('error', response.data)
         self.assertIn(response.data['error']['code'], ['Http404', 'NotFound'])
+
+
+from unittest.mock import patch, MagicMock
+from .services import YouTubeService, YouTubeAPIError
+
+
+class YouTubeServiceTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='syncuser', password='Password123!')
+        self.channel = YouTubeChannel.objects.create(
+            owner=self.user,
+            channel_id='UC_mock_channel_12345',
+            title='Mock Channel',
+            api_key='mock_live_api_key_sample'
+        )
+
+    @patch('requests.get')
+    def test_sync_channel_with_api_mock(self, mock_get):
+        mock_response = MagicMock()
+        mock_response.ok = True
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            'items': [{
+                'snippet': {
+                    'title': 'Mock Channel Updated Title',
+                    'description': 'Updated description',
+                    'customUrl': '@mockchannel',
+                    'thumbnails': {'high': {'url': 'https://example.com/high.jpg'}}
+                },
+                'statistics': {
+                    'subscriberCount': '500000',
+                    'videoCount': '150',
+                    'viewCount': '12500000'
+                }
+            }]
+        }
+        mock_get.return_value = mock_response
+
+        service = YouTubeService(api_key='mock_live_api_key_sample')
+        job = service.sync_channel(self.channel)
+
+        self.channel.refresh_from_db()
+        self.assertEqual(job.status, SyncJob.Status.COMPLETED)
+        self.assertEqual(self.channel.title, 'Mock Channel Updated Title')
+        self.assertEqual(self.channel.subscriber_count, 500000)
+        self.assertEqual(self.channel.video_count, 150)
+        self.assertEqual(self.channel.view_count, 12500000)
+
+    @patch('requests.get')
+    def test_sync_channel_api_error_handling(self, mock_get):
+        mock_response = MagicMock()
+        mock_response.ok = False
+        mock_response.status_code = 403
+        mock_response.json.return_value = {
+            'error': {'message': 'Quota exceeded'}
+        }
+        mock_get.return_value = mock_response
+
+        service = YouTubeService(api_key='mock_live_api_key_sample')
+        job = service.sync_channel(self.channel)
+
+        self.assertEqual(job.status, SyncJob.Status.FAILED)
+        self.assertIn('Quota exceeded', job.error_message)
+
+    def test_missing_api_key_raises_error(self):
+        service = YouTubeService(api_key='')
+        with self.assertRaises(YouTubeAPIError):
+            service.fetch_channel_details('UC_any_channel')
+
 

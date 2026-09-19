@@ -77,7 +77,7 @@ export function SystemStatus() {
             title="PostgreSQL Baza"
             value={health.database === 'ok' ? '🟢 Bog‘langan' : '🔴 Nosoz'}
             icon="🗄️"
-            subtitle="PostgreSQL 18"
+            subtitle="PostgreSQL (Django ORM)"
           />
           <StatCard
             title="API Versiyasi"

@@ -4,6 +4,11 @@ from rest_framework import status
 from django.db import connection
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class HealthCheckView(APIView):
     """
     Health check endpoint to verify API and Database status.
@@ -15,7 +20,8 @@ class HealthCheckView(APIView):
                 cursor.execute("SELECT 1;")
                 cursor.fetchone()
         except Exception as exc:
-            db_status = f"unhealthy: {str(exc)}"
+            logger.error(f"Health check database query failed: {exc}", exc_info=True)
+            db_status = "unhealthy"
 
         return Response(
             {

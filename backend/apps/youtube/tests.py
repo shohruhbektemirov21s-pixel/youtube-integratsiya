@@ -346,5 +346,31 @@ class YouTubeSecurityTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(YouTubeChannel.objects.filter(title='XSS Attack Channel').exists())
 
+    def test_video_cross_channel_playlist_blocked(self):
+        # Create channel for attacker
+        attacker_channel = YouTubeChannel.objects.create(
+            owner=self.attacker,
+            channel_id='UC_attacker_channel_1111',
+            title='Attacker Channel'
+        )
+        # Playlist belongs to victim channel
+        victim_playlist = YouTubePlaylist.objects.create(
+            channel=self.victim_channel,
+            playlist_id='PL_victim_sec_play',
+            title='Victim Playlist'
+        )
+
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.attacker_token.key}')
+        url = reverse('youtube-video-list')
+        payload = {
+            'channel': attacker_channel.pk,
+            'playlist': victim_playlist.pk,
+            'video_id': 'cross_vid_01',
+            'title': 'Cross Injected Video'
+        }
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(YouTubeVideo.objects.filter(video_id='cross_vid_01').exists())
+
 
 

@@ -156,6 +156,20 @@ class YouTubeVideoSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Video ID da ruxsat etilmagan belgilar mavjud.")
         return cleaned
 
+    def validate(self, attrs):
+        channel = attrs.get('channel') or (self.instance.channel if self.instance else None)
+        playlist = attrs.get('playlist') or (self.instance.playlist if self.instance and 'playlist' not in attrs else None)
+
+        if playlist and channel and playlist.channel_id != channel.id:
+            raise serializers.ValidationError({"playlist": "Tanlangan playlist ushbu kanalga tegishli emas."})
+
+        request = self.context.get('request')
+        if playlist and request and not request.user.is_staff:
+            if playlist.channel.owner != request.user:
+                raise serializers.ValidationError({"playlist": "Siz faqat o'zingizga tegishli playlistni tanlashingiz mumkin."})
+
+        return attrs
+
 
 class SyncJobSerializer(serializers.ModelSerializer):
     channel_title = serializers.ReadOnlyField(source='channel.title')

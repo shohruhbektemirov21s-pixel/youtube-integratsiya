@@ -81,6 +81,39 @@ export const youtubeService = {
     });
   },
 
+  async createFlowAccount(data: Partial<import('../types/youtube').FlowAIAccount>): Promise<import('../types/youtube').FlowAIAccount> {
+    return request<import('../types/youtube').FlowAIAccount>('/youtube/flow-accounts/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateFlowAccount(id: number, data: Partial<import('../types/youtube').FlowAIAccount>): Promise<import('../types/youtube').FlowAIAccount> {
+    return request<import('../types/youtube').FlowAIAccount>(`/youtube/flow-accounts/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteFlowAccount(id: number): Promise<void> {
+    return request<void>(`/youtube/flow-accounts/${id}/`, {
+      method: 'DELETE',
+    });
+  },
+
+  async getDetectedChromeProfiles(): Promise<{ success: boolean; profiles: import('../types/youtube').DetectedProfile[] }> {
+    return request<{ success: boolean; profiles: import('../types/youtube').DetectedProfile[] }>('/youtube/flow-accounts/detected_chrome_profiles/', {
+      method: 'GET',
+    });
+  },
+
+  async inspectAccount(id: number, data?: Partial<import('../types/youtube').FlowAIAccount>): Promise<ApiResponse<import('../types/youtube').FlowAIAccount>> {
+    return request<ApiResponse<import('../types/youtube').FlowAIAccount>>(`/youtube/flow-accounts/${id}/inspect_account/`, {
+      method: 'POST',
+      body: JSON.stringify(data || {}),
+    });
+  },
+
   async getNiches(): Promise<PaginatedResponse<import('../types/youtube').ChannelNiche>> {
     return request<PaginatedResponse<import('../types/youtube').ChannelNiche>>('/youtube/niches/', {
       method: 'GET',

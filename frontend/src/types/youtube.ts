@@ -90,12 +90,25 @@ export interface FlowAIAccount {
   name: string;
   email: string;
   profile_dir: string;
+  has_flow_credits: boolean;
   credits_remaining: number;
   initial_credits: number;
+  has_youtube_channel: boolean;
+  youtube_channel_name: string;
+  youtube_channel_id: string;
+  youtube_subscribers: number;
   is_active: boolean;
   last_used_at: string | null;
+  last_inspected_at: string | null;
+  inspection_status: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface DetectedProfile {
+  profile_dir: string;
+  name: string;
+  email: string;
 }
 
 export interface ChannelNiche {

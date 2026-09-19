@@ -204,7 +204,7 @@ class SyncJobSerializer(serializers.ModelSerializer):
 
 class FlowAIAccountSerializer(serializers.ModelSerializer):
     """
-    Serializer for Flow AI browser accounts.
+    Serializer for Flow AI and YouTube accounts.
     """
     class Meta:
         model = FlowAIAccount
@@ -213,10 +213,17 @@ class FlowAIAccountSerializer(serializers.ModelSerializer):
             'name',
             'email',
             'profile_dir',
+            'has_flow_credits',
             'credits_remaining',
             'initial_credits',
+            'has_youtube_channel',
+            'youtube_channel_name',
+            'youtube_channel_id',
+            'youtube_subscribers',
             'is_active',
             'last_used_at',
+            'last_inspected_at',
+            'inspection_status',
             'created_at',
             'updated_at',
         ]

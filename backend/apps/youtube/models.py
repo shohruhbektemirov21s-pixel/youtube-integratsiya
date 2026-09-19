@@ -203,12 +203,21 @@ class FlowAIAccount(TimeStampedModel):
     profile_dir = models.CharField(
         max_length=255,
         default="Default",
-        help_text="Chrome profil katalogi (masalan: Default, Profile 1, Profile 3, Profile 4)"
+        help_text="Chrome profil katalogi (masalan: Default, Profile 1, Profile 3, Profile 4, Profile 6)"
     )
+    has_flow_credits = models.BooleanField(default=True, help_text="Ushbu akkauntda Flow AI kreditlari bormi")
     credits_remaining = models.IntegerField(default=1000, help_text="Qolgan kreditlar miqdori")
     initial_credits = models.IntegerField(default=1000, help_text="Dastlabki kredit miqdori")
+
+    has_youtube_channel = models.BooleanField(default=False, help_text="Ushbu akkauntda YouTube kanal bormi")
+    youtube_channel_name = models.CharField(max_length=255, blank=True, default='', help_text="YouTube kanal nomi")
+    youtube_channel_id = models.CharField(max_length=100, blank=True, default='', help_text="YouTube kanal ID")
+    youtube_subscribers = models.BigIntegerField(default=0, help_text="YouTube obunachilar soni")
+
     is_active = models.BooleanField(default=True, db_index=True)
     last_used_at = models.DateTimeField(null=True, blank=True)
+    last_inspected_at = models.DateTimeField(null=True, blank=True, help_text="Oxirgi marta brauzer orqali tekshirilgan vaqt")
+    inspection_status = models.CharField(max_length=50, default="verified", help_text="Holat: verified, pending, not_found")
 
     class Meta:
         verbose_name = 'Flow AI Akkaunt'

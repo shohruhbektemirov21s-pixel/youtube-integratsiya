@@ -7,13 +7,12 @@ import { VideoList } from './components/videos/VideoList';
 import { SyncJobList } from './components/sync/SyncJobList';
 import { SystemStatus } from './components/system/SystemStatus';
 import { AutomationDashboard } from './components/automation/AutomationDashboard';
-import { AuthModal } from './components/auth/AuthModal';
+import { AccountManagement } from './components/accounts/AccountManagement';
 import { youtubeService } from './services/youtubeService';
 import './App.css';
 
 function MainLayout() {
   const [activeTab, setActiveTab] = useState<NavTab>('automation');
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [backendOnline, setBackendOnline] = useState<boolean>(false);
 
   const checkInitialHealth = async () => {
@@ -47,23 +46,18 @@ function MainLayout() {
       <Navbar
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onOpenAuth={() => setIsAuthModalOpen(true)}
         backendOnline={backendOnline}
       />
 
       <main className="main-content">
         {activeTab === 'automation' && <AutomationDashboard />}
-        {activeTab === 'channels' && <ChannelList onOpenAuth={() => setIsAuthModalOpen(true)} />}
+        {activeTab === 'accounts' && <AccountManagement />}
+        {activeTab === 'channels' && <ChannelList />}
         {activeTab === 'playlists' && <PlaylistList />}
         {activeTab === 'videos' && <VideoList />}
         {activeTab === 'sync' && <SyncJobList />}
         {activeTab === 'system' && <SystemStatus />}
       </main>
-
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
     </div>
   );
 }

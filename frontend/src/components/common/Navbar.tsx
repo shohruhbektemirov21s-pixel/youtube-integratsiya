@@ -1,17 +1,12 @@
-import { useAuth } from '../../context/useAuth';
-
-export type NavTab = 'automation' | 'channels' | 'playlists' | 'videos' | 'sync' | 'system';
+export type NavTab = 'automation' | 'accounts' | 'channels' | 'playlists' | 'videos' | 'sync' | 'system';
 
 interface NavbarProps {
   activeTab: NavTab;
   onTabChange: (tab: NavTab) => void;
-  onOpenAuth: () => void;
   backendOnline: boolean;
 }
 
-export function Navbar({ activeTab, onTabChange, onOpenAuth, backendOnline }: NavbarProps) {
-  const { user, isAuthenticated, logout } = useAuth();
-
+export function Navbar({ activeTab, onTabChange, backendOnline }: NavbarProps) {
   const navItemStyle = (tab: NavTab) => ({
     padding: '0.5rem 1rem',
     borderRadius: '6px',
@@ -50,7 +45,7 @@ export function Navbar({ activeTab, onTabChange, onOpenAuth, backendOnline }: Na
           <span style={{ fontSize: '1.75rem' }}>📺</span>
           <div>
             <h1 style={{ fontSize: '1.2rem', margin: 0, color: '#0f172a', fontWeight: 700 }}>
-              YouTube Integratsiya
+              YouTube AI Studio
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.1rem' }}>
               <span
@@ -68,15 +63,15 @@ export function Navbar({ activeTab, onTabChange, onOpenAuth, backendOnline }: Na
           </div>
         </div>
 
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button type="button" style={navItemStyle('automation')} onClick={() => onTabChange('automation')}>
             ⚡️ Avtomatlashtirish & Flow AI
           </button>
+          <button type="button" style={navItemStyle('accounts')} onClick={() => onTabChange('accounts')}>
+            👥 Akkauntlar (Kredit & Kanal)
+          </button>
           <button type="button" style={navItemStyle('channels')} onClick={() => onTabChange('channels')}>
             Kanallar
-          </button>
-          <button type="button" style={navItemStyle('playlists')} onClick={() => onTabChange('playlists')}>
-            Playlistlar
           </button>
           <button type="button" style={navItemStyle('videos')} onClick={() => onTabChange('videos')}>
             Videolar
@@ -89,50 +84,24 @@ export function Navbar({ activeTab, onTabChange, onOpenAuth, backendOnline }: Na
           </button>
         </nav>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {isAuthenticated && user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#0f172a' }}>
-                  {user.first_name || user.username}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user.email}</div>
-              </div>
-              <button
-                type="button"
-                onClick={logout}
-                style={{
-                  padding: '0.4rem 0.8rem',
-                  backgroundColor: '#f1f5f9',
-                  color: '#475569',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '0.85rem',
-                  fontWeight: 500,
-                }}
-              >
-                Chiqish
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={onOpenAuth}
-              style={{
-                padding: '0.45rem 1rem',
-                backgroundColor: '#2563eb',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-              }}
-            >
-              Kirish / Ro'yxatdan o'tish
-            </button>
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div
+            style={{
+              padding: '0.4rem 0.85rem',
+              backgroundColor: '#f1f5f9',
+              borderRadius: '20px',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              color: '#334155',
+              border: '1px solid #cbd5e1',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+            }}
+          >
+            <span>👑</span>
+            <span>Shaxsiy Boshqaruv</span>
+          </div>
         </div>
       </div>
     </header>

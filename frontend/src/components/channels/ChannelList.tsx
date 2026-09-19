@@ -4,16 +4,10 @@ import { Spinner } from '../common/Spinner';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { EmptyState } from '../common/EmptyState';
 import { AddChannelModal } from './AddChannelModal';
-import { useAuth } from '../../context/useAuth';
 import { ApiError } from '../../services/api';
 import type { YouTubeChannel } from '../../types/youtube';
 
-interface ChannelListProps {
-  onOpenAuth: () => void;
-}
-
-export function ChannelList({ onOpenAuth }: ChannelListProps) {
-  const { isAuthenticated, user } = useAuth();
+export function ChannelList() {
   const [channels, setChannels] = useState<YouTubeChannel[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<{ message: string; code?: string; details?: unknown } | null>(null);
@@ -43,11 +37,6 @@ export function ChannelList({ onOpenAuth }: ChannelListProps) {
   }, []);
 
   const handleSync = async (channel: YouTubeChannel) => {
-    if (!isAuthenticated) {
-      onOpenAuth();
-      return;
-    }
-
     setSyncingId(channel.id);
     setActionNotice(null);
     try {
@@ -63,11 +52,6 @@ export function ChannelList({ onOpenAuth }: ChannelListProps) {
   };
 
   const handleDelete = async (channel: YouTubeChannel) => {
-    if (!isAuthenticated) {
-      onOpenAuth();
-      return;
-    }
-
     if (!window.confirm(`'${channel.title}' kanalini o'chirishni tasdiqlaysizmi?`)) {
       return;
     }
@@ -104,13 +88,7 @@ export function ChannelList({ onOpenAuth }: ChannelListProps) {
         </div>
         <button
           type="button"
-          onClick={() => {
-            if (!isAuthenticated) {
-              onOpenAuth();
-            } else {
-              setIsAddModalOpen(true);
-            }
-          }}
+          onClick={() => setIsAddModalOpen(true)}
           style={{
             padding: '0.6rem 1.25rem',
             backgroundColor: '#2563eb',
@@ -154,13 +132,7 @@ export function ChannelList({ onOpenAuth }: ChannelListProps) {
           title="Hech qanday kanal topilmadi"
           description="Hozircha birorta ham YouTube kanali integratsiya qilinmagan. Birinchi kanalingizni qo'shib boshlang!"
           actionLabel="Kanal Qo'shish"
-          onAction={() => {
-            if (!isAuthenticated) {
-              onOpenAuth();
-            } else {
-              setIsAddModalOpen(true);
-            }
-          }}
+          onAction={() => setIsAddModalOpen(true)}
           icon="📺"
         />
       )}
@@ -282,24 +254,22 @@ export function ChannelList({ onOpenAuth }: ChannelListProps) {
                     {syncingId === channel.id ? 'Sinxronlanmoqda...' : '🔄 Sinxronlash'}
                   </button>
 
-                  {user?.username === channel.owner_username && (
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(channel)}
-                      style={{
-                        padding: '0.35rem 0.5rem',
-                        backgroundColor: '#fff5f5',
-                        color: '#dc2626',
-                        border: '1px solid #fecaca',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
-                      }}
-                      title="Kanalni o'chirish"
-                    >
-                      🗑️
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(channel)}
+                    style={{
+                      padding: '0.35rem 0.5rem',
+                      backgroundColor: '#fff5f5',
+                      color: '#dc2626',
+                      border: '1px solid #fecaca',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                    }}
+                    title="Kanalni o'chirish"
+                  >
+                    🗑️
+                  </button>
                 </div>
               </div>
             </div>

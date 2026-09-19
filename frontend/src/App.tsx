@@ -26,6 +26,17 @@ function MainLayout() {
   };
 
   useEffect(() => {
+    // Initialize Telegram WebApp if running inside Telegram
+    const tg = (window as unknown as { Telegram?: { WebApp?: { ready: () => void; expand: () => void } } }).Telegram?.WebApp;
+    if (tg) {
+      try {
+        tg.ready();
+        tg.expand();
+      } catch (err) {
+        console.warn('Telegram WebApp init:', err);
+      }
+    }
+
     checkInitialHealth();
     const interval = setInterval(checkInitialHealth, 15000);
     return () => clearInterval(interval);

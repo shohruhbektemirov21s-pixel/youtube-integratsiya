@@ -190,7 +190,9 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins_str.split(',') if o.stri
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
+# Telegram WebApp embedding support
+X_FRAME_OPTIONS = 'ALLOWALL'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 if not DEBUG:
     SESSION_COOKIE_SECURE = True

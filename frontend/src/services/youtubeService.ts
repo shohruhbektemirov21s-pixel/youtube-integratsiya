@@ -74,4 +74,48 @@ export const youtubeService = {
       params: { channel_id: channelId },
     });
   },
+
+  async getFlowAccounts(): Promise<PaginatedResponse<import('../types/youtube').FlowAIAccount>> {
+    return request<PaginatedResponse<import('../types/youtube').FlowAIAccount>>('/youtube/flow-accounts/', {
+      method: 'GET',
+    });
+  },
+
+  async getNiches(): Promise<PaginatedResponse<import('../types/youtube').ChannelNiche>> {
+    return request<PaginatedResponse<import('../types/youtube').ChannelNiche>>('/youtube/niches/', {
+      method: 'GET',
+    });
+  },
+
+  async getGenerationTasks(): Promise<PaginatedResponse<import('../types/youtube').VideoGenerationTask>> {
+    return request<PaginatedResponse<import('../types/youtube').VideoGenerationTask>>('/youtube/generation-tasks/', {
+      method: 'GET',
+    });
+  },
+
+  async generateNextVideo(topic?: string): Promise<ApiResponse<import('../types/youtube').VideoGenerationTask>> {
+    return request<ApiResponse<import('../types/youtube').VideoGenerationTask>>('/youtube/generation-tasks/generate_next/', {
+      method: 'POST',
+      body: JSON.stringify({ topic }),
+    });
+  },
+
+  async getScheduledUploads(): Promise<PaginatedResponse<import('../types/youtube').ScheduledUpload>> {
+    return request<PaginatedResponse<import('../types/youtube').ScheduledUpload>>('/youtube/scheduled-uploads/', {
+      method: 'GET',
+    });
+  },
+
+  async getDailyAnalytics(): Promise<PaginatedResponse<import('../types/youtube').DailyChannelAnalytics>> {
+    return request<PaginatedResponse<import('../types/youtube').DailyChannelAnalytics>>('/youtube/daily-analytics/', {
+      method: 'GET',
+    });
+  },
+
+  async sendDailyReport(chatId?: string): Promise<ApiResponse<{ report_text: string; telegram_sent: boolean; chat_id: string | null }>> {
+    return request<ApiResponse<{ report_text: string; telegram_sent: boolean; chat_id: string | null }>>('/youtube/daily-analytics/send_daily_report/', {
+      method: 'POST',
+      body: JSON.stringify({ chat_id: chatId }),
+    });
+  },
 };

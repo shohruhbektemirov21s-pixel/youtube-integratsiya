@@ -4,7 +4,17 @@ Enforces strict input validation, regex sanitization, and IDOR prevention.
 """
 import re
 from rest_framework import serializers
-from .models import YouTubeChannel, YouTubePlaylist, YouTubeVideo, SyncJob
+from .models import (
+    YouTubeChannel,
+    YouTubePlaylist,
+    YouTubeVideo,
+    SyncJob,
+    FlowAIAccount,
+    ChannelNiche,
+    VideoGenerationTask,
+    ScheduledUpload,
+    DailyChannelAnalytics,
+)
 
 # YouTube identifier format regex: alphanumeric, underscores, hyphens
 YOUTUBE_ID_PATTERN = re.compile(r'^[a-zA-Z0-9_\-]+$')
@@ -190,3 +200,131 @@ class SyncJobSerializer(serializers.ModelSerializer):
             'updated_at',
             'channel_title',
         ]
+
+
+class FlowAIAccountSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Flow AI browser accounts.
+    """
+    class Meta:
+        model = FlowAIAccount
+        fields = [
+            'id',
+            'name',
+            'email',
+            'profile_dir',
+            'credits_remaining',
+            'initial_credits',
+            'is_active',
+            'last_used_at',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class ChannelNicheSerializer(serializers.ModelSerializer):
+    """
+    Serializer for single-niche strategy configuration.
+    """
+    channel_title = serializers.ReadOnlyField(source='channel.title')
+
+    class Meta:
+        model = ChannelNiche
+        fields = [
+            'id',
+            'channel',
+            'channel_title',
+            'niche_name',
+            'description',
+            'tone',
+            'keywords',
+            'prompt_guidelines',
+            'is_active',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'channel_title']
+
+
+class VideoGenerationTaskSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Flow AI video generation tasks.
+    """
+    account_name = serializers.ReadOnlyField(source='account.name')
+
+    class Meta:
+        model = VideoGenerationTask
+        fields = [
+            'id',
+            'account',
+            'account_name',
+            'topic',
+            'prompt',
+            'status',
+            'video_file_path',
+            'video_url',
+            'credits_used',
+            'error_message',
+            'completed_at',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'account_name']
+
+
+class ScheduledUploadSerializer(serializers.ModelSerializer):
+    """
+    Serializer for 19:00 daily YouTube video upload queue.
+    """
+    channel_title = serializers.ReadOnlyField(source='channel.title')
+    video_topic = serializers.ReadOnlyField(source='video_task.topic')
+
+    class Meta:
+        model = ScheduledUpload
+        fields = [
+            'id',
+            'channel',
+            'channel_title',
+            'video_task',
+            'video_topic',
+            'title',
+            'description',
+            'tags',
+            'scheduled_date',
+            'scheduled_time',
+            'status',
+            'youtube_video_id',
+            'published_at',
+            'error_message',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'channel_title', 'video_topic']
+
+
+class DailyChannelAnalyticsSerializer(serializers.ModelSerializer):
+    """
+    Serializer for daily metrics and Telegram growth reports.
+    """
+    channel_title = serializers.ReadOnlyField(source='channel.title')
+
+    class Meta:
+        model = DailyChannelAnalytics
+        fields = [
+            'id',
+            'channel',
+            'channel_title',
+            'date',
+            'total_views',
+            'total_subscribers',
+            'total_videos',
+            'views_growth_today',
+            'subscribers_growth_today',
+            'growth_rate_percent',
+            'telegram_report_sent',
+            'telegram_sent_at',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'channel_title']

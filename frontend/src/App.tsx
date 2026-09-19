@@ -6,12 +6,13 @@ import { PlaylistList } from './components/playlists/PlaylistList';
 import { VideoList } from './components/videos/VideoList';
 import { SyncJobList } from './components/sync/SyncJobList';
 import { SystemStatus } from './components/system/SystemStatus';
+import { AutomationDashboard } from './components/automation/AutomationDashboard';
 import { AuthModal } from './components/auth/AuthModal';
 import { youtubeService } from './services/youtubeService';
 import './App.css';
 
 function MainLayout() {
-  const [activeTab, setActiveTab] = useState<NavTab>('channels');
+  const [activeTab, setActiveTab] = useState<NavTab>('automation');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [backendOnline, setBackendOnline] = useState<boolean>(false);
 
@@ -40,6 +41,7 @@ function MainLayout() {
       />
 
       <main className="main-content">
+        {activeTab === 'automation' && <AutomationDashboard />}
         {activeTab === 'channels' && <ChannelList onOpenAuth={() => setIsAuthModalOpen(true)} />}
         {activeTab === 'playlists' && <PlaylistList />}
         {activeTab === 'videos' && <VideoList />}

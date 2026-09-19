@@ -1,6 +1,6 @@
 import { useAuth } from '../../context/useAuth';
 
-export type NavTab = 'channels' | 'playlists' | 'videos' | 'sync' | 'system';
+export type NavTab = 'automation' | 'channels' | 'playlists' | 'videos' | 'sync' | 'system';
 
 interface NavbarProps {
   activeTab: NavTab;
@@ -69,6 +69,9 @@ export function Navbar({ activeTab, onTabChange, onOpenAuth, backendOnline }: Na
         </div>
 
         <nav style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button type="button" style={navItemStyle('automation')} onClick={() => onTabChange('automation')}>
+            ⚡️ Avtomatlashtirish & Flow AI
+          </button>
           <button type="button" style={navItemStyle('channels')} onClick={() => onTabChange('channels')}>
             Kanallar
           </button>

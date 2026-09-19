@@ -1,8 +1,10 @@
 import { useAuth } from '../../context/AuthContext';
 
+export type NavTab = 'channels' | 'playlists' | 'videos' | 'sync' | 'system';
+
 interface NavbarProps {
-  activeTab: 'channels' | 'videos' | 'sync' | 'system';
-  onTabChange: (tab: 'channels' | 'videos' | 'sync' | 'system') => void;
+  activeTab: NavTab;
+  onTabChange: (tab: NavTab) => void;
   onOpenAuth: () => void;
   backendOnline: boolean;
 }
@@ -10,7 +12,7 @@ interface NavbarProps {
 export function Navbar({ activeTab, onTabChange, onOpenAuth, backendOnline }: NavbarProps) {
   const { user, isAuthenticated, logout } = useAuth();
 
-  const navItemStyle = (tab: typeof activeTab) => ({
+  const navItemStyle = (tab: NavTab) => ({
     padding: '0.5rem 1rem',
     borderRadius: '6px',
     border: 'none',
@@ -69,6 +71,9 @@ export function Navbar({ activeTab, onTabChange, onOpenAuth, backendOnline }: Na
         <nav style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <button type="button" style={navItemStyle('channels')} onClick={() => onTabChange('channels')}>
             Kanallar
+          </button>
+          <button type="button" style={navItemStyle('playlists')} onClick={() => onTabChange('playlists')}>
+            Playlistlar
           </button>
           <button type="button" style={navItemStyle('videos')} onClick={() => onTabChange('videos')}>
             Videolar

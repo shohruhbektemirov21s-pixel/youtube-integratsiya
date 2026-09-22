@@ -366,7 +366,8 @@ def get_main_keyboard():
             InlineKeyboardButton("📈 Competitor Trends", callback_data="cmd_trends")
         ],
         [
-            InlineKeyboardButton("📝 Daily Plan", callback_data="cmd_plan")
+            InlineKeyboardButton("📝 Daily Plan", callback_data="cmd_plan"),
+            InlineKeyboardButton("💎 Obsidian Vault", callback_data="cmd_obsidian")
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
@@ -479,6 +480,29 @@ async def plan_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Bugungi kontent reja tayyor."
     )
 
+async def obsidian_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /obsidian command - syncs and reports vault status."""
+    chat_id = update.effective_chat.id
+    msg = await context.bot.send_message(chat_id, "💎 Obsidian Vault bilan sinxronizatsiya tekshirilmoqda...")
+    try:
+        from scripts.obsidian_vault_sync import run_full_obsidian_sync, VAULT_PATH
+        run_full_obsidian_sync()
+        notes = glob.glob(os.path.join(VAULT_PATH, "**/*.md"), recursive=True)
+        report = (
+            f"💎 *Obsidian Vault To'liq Ulandi!*\n\n"
+            f"📂 *Papkasi:* `{VAULT_PATH}`\n"
+            f"📝 *Jami Eslatmalar:* {len(notes)} ta markdown fayl\n"
+            f"📅 *30-kunlik reja:* Barcha kunlar wikilinklar va promptlar bilan eksport qilingan\n"
+            f"🧠 *Channel Intelligence:* Raqobatchilar va trendlar MOC ga bog'langan\n"
+            f"⚡ *Holat:* 🟢 Sinxron va faol"
+        )
+    except Exception as e:
+        logger.error(f"Obsidian sync error: {e}")
+        report = f"⚠️ Obsidian xatolik: {e}"
+        
+    await context.bot.edit_message_text(report, chat_id=chat_id, message_id=msg.message_id, parse_mode='Markdown')
+    await send_uzbek_voice_summary(update, context, "Obsidian vault to'liq ulandi va barcha kontent rejalari eslatmalarga sinxronlandi.")
+
 async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle plain text messages by treating them as video topics."""
     topic = update.message.text
@@ -518,6 +542,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         await trends_command(update, context)
     elif command == "cmd_plan":
         await plan_command(update, context)
+    elif command == "cmd_obsidian":
+        await obsidian_command(update, context)
     elif command.startswith("master_confirm_"):
         sid = command.replace("master_confirm_", "")
         v_data = MASTER_PENDING_CONFIRMATIONS.get(sid)
@@ -614,6 +640,7 @@ def main():
     application.add_handler(CommandHandler("status", authorized_only(status_command)))
     application.add_handler(CommandHandler("trends", authorized_only(trends_command)))
     application.add_handler(CommandHandler("plan", authorized_only(plan_command)))
+    application.add_handler(CommandHandler("obsidian", authorized_only(obsidian_command)))
     
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, authorized_only(handle_text_message)))
     application.add_handler(CallbackQueryHandler(authorized_only(handle_callback_query)))

@@ -144,9 +144,39 @@ hermes cron list
 ## 📱 Telegram Bot Buyruqlari (@youtubebildirishnoma_bot)
 
 - `/start` — Botni faollashtirish va shaxsiy ID ni biriktirish
-- `Bugun qanday videolar yuklandi?` — 19:00 dagi yuklashlar va tayyorlangan videolar ro'yxatini beradi
-- `Prosmotrlar qancha bo'ldi?` — Bugungi ko'rishlar, o'sish dinamikasi va tahlilini yuboradi
-- `Kreditlar holati` — 4 ta Flow AI akkauntidagi qoldiq kreditlarni ko'rsatadi
+- `/plan` — 30 kunlik master reja va bugungi navbatdagi videoni ko'rsatish
+- `/obsidian` — Obsidian Vault sinxronizatsiyasi va eslatmalar hisoboti
+- `/image <prompt>` yoki `/rasm <prompt>` — 8K fotorealistik rasm generatsiya qilish
+- `/generate <mavzu>` — Maxsus mavzu bo'yicha to'liq avtonom video yaratish
+- `/status` — Kanal va tizim holati
+- `/trends` — Raqobatchilar va trendlar tahlili
+
+---
+
+## 💎 Obsidian Vault Integratsiyasi
+
+Loyiha to'liq **Obsidian Knowledge OS** bilan integratsiya qilingan:
+- **Vault manzili:** `~/Documents/Obsidian Vault/BeyondEra_Tech`
+- **Sinxronizator:** `python3 scripts/obsidian_vault_sync.py`
+- **Tuzilishi:**
+  - `00 - Overview & Dashboards/` — Master MOC (Map of Content) va 30 kunlik interaktiv Kanban/Jadval
+  - `01 - 30-Day Content Plan/` — Har bir kun uchun alohida eslatmalar (Flow AI promptlar, inglizcha ssenariy, telemetriya, o'zbekcha sharh)
+  - `02 - Channel Intelligence/` — Trendlar, raqobatchilar tahlili va retention sirlari
+  - `04 - Automation & Infrastructure/` — Server arxitekturasi va daemonlar holati
+
+---
+
+## 🖥️ 24/7 Avtonom Server Rejimi
+
+Kali Linux noutbuki to'liq uzluksiz server sifatida konfiguratsiya qilindi:
+- **Lid Close No-Suspend:** Noutbuk qopqog'i yopilganda ham tizim uxlamaydi (`/etc/systemd/logind.conf.d/server-nosuspend.conf`).
+- **Linger rejimida Systemd:** Foydalanuvchi tizimdan chiqqanda ham fondagi barcha demonlar to'xtovsiz ishlaydi (`loginctl enable-linger kali`).
+- **Faol Systemd servislari:**
+  - `youtube-integratsiya.service` — Docker konteynerlari
+  - `youtube-integratsiya-scheduler.service` — Har kuni 19:00 da YouTube nashriyoti va navbat nazorati
+  - `youtube-telegram-bot.service` — Telegram Hermes Master Bot
+  - `hermes-gateway.service` — Hermes AI agentlar magistrali
+  - `telegram-webapp-tunnel.service` — Tashqi Telegram Mini-App ulanishi
 
 ---
 

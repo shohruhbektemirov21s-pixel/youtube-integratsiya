@@ -255,9 +255,9 @@ async def run_generation_pipeline(update: Update, context: ContextTypes.DEFAULT_
         await context.bot.edit_message_text(f"📝 Generating content plan for: {topic}...", chat_id=chat_id, message_id=status_msg.message_id)
         script_text = ""
         try:
-            plan = generate_content_plan(topic=topic, days=1)
-            if isinstance(plan, dict) and 'script' in plan:
-                script_text = plan['script']
+            plan = generate_content_plan(topic_hint=topic)
+            if isinstance(plan, dict):
+                script_text = plan.get('voiceover_script') or plan.get('full_voiceover_script') or plan.get('script') or ""
             elif isinstance(plan, str):
                 script_text = plan
             else:
@@ -271,19 +271,23 @@ async def run_generation_pipeline(update: Update, context: ContextTypes.DEFAULT_
         
         # 2. Voiceover
         await context.bot.edit_message_text("🎙 Synthesizing English voiceover...", chat_id=chat_id, message_id=status_msg.message_id)
-        voice_path = os.path.join(TEMP_DIR, f"{session_id}_voice.wav")
+        voice_path = os.path.join(TEMP_DIR, f"{session_id}_voice.mp3")
+        voice_duration = 45.0
         try:
-            voice_path = synthesize_voiceover(script_text, output_path=voice_path)
-        except Exception as e:
-            logger.error(f"Error in synthesize_voiceover: {e}")
-            communicate = edge_tts.Communicate(script_text, "en-US-ChristopherNeural")
+            communicate = edge_tts.Communicate(script_text, "en-US-ChristopherNeural", rate="+3%")
             await communicate.save(voice_path)
+            probe_cmd = ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", voice_path]
+            p_out = subprocess.check_output(probe_cmd).decode('utf-8').strip()
+            voice_duration = float(p_out)
+        except Exception as e:
+            logger.error(f"Error in edge_tts voiceover: {e}")
+            voice_duration = 30.0
             
         # 3. Subtitles
         await context.bot.edit_message_text("🔤 Generating ASS subtitles...", chat_id=chat_id, message_id=status_msg.message_id)
         subs_path = os.path.join(TEMP_DIR, f"{session_id}_subs.ass")
         try:
-            subs_path = generate_styled_ass_subtitles(voice_path, script_text, output_path=subs_path)
+            subs_path = generate_styled_ass_subtitles(script_text, voice_duration, output_ass=subs_path, is_shorts=True)
         except Exception as e:
             logger.error(f"Error in generate_styled_ass_subtitles: {e}")
             with open(subs_path, 'w', encoding='utf-8') as f:
@@ -452,7 +456,13 @@ async def plan_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = await context.bot.send_message(chat_id, "📝 Retrieving today's content plan...")
     
     try:
-        plan = generate_content_plan(days=30, get_today=True)
+        from scripts.content_plan_engine import get_next_pending_plan_entry, get_current_30_day_progress
+        curr_progress = get_current_30_day_progress()
+        pending = get_next_pending_plan_entry()
+        if pending:
+            plan = f"📅 Kun #{pending.get('day')}: {pending.get('title')}\n🔹 Format: {str(pending.get('video_type', 'shorts')).upper()}\n🔹 Mavzu: {pending.get('topic')}\n\nJami yakunlangan kunlar: {curr_progress}/30"
+        else:
+            plan = f"Barcha 30 kunlik reja muvaffaqiyatli yakunlangan! Jami: {curr_progress}/30"
     except Exception as e:
         logger.error(f"Plan error: {e}")
         plan = "⚠️ Failed to retrieve today's plan."

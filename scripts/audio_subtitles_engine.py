@@ -223,7 +223,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     return output_ass
 
 
-def resolve_ambient_music(music_name_or_path: Optional[str]) -> str:
+def resolve_ambient_music(music_name_or_path: Optional[str] = None) -> str:
     """Resolves ambient audio track name or path to an existing asset."""
     audio_dir = os.path.join(PROJECT_ROOT, "assets/audio_library")
     if not music_name_or_path:

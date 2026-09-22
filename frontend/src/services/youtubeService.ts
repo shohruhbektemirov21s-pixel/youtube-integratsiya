@@ -145,6 +145,32 @@ export const youtubeService = {
     });
   },
 
+  async generateImageFromPrompt(prompt: string): Promise<ApiResponse<{ image_url: string; prompt: string; title: string }>> {
+    return request<ApiResponse<{ image_url: string; prompt: string; title: string }>>('/youtube/generation-tasks/generate_image/', {
+      method: 'POST',
+      body: JSON.stringify({ prompt }),
+    });
+  },
+
+  async generateVideoFromPrompt(prompt: string, topic?: string): Promise<ApiResponse<import('../types/youtube').VideoGenerationTask & { upload_id?: number }>> {
+    return request<ApiResponse<import('../types/youtube').VideoGenerationTask & { upload_id?: number }>>('/youtube/generation-tasks/generate_video_from_prompt/', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, topic }),
+    });
+  },
+
+  async confirmUpload(uploadId: number): Promise<ApiResponse<import('../types/youtube').ScheduledUpload>> {
+    return request<ApiResponse<import('../types/youtube').ScheduledUpload>>(`/youtube/scheduled-uploads/${uploadId}/confirm_upload/`, {
+      method: 'POST',
+    });
+  },
+
+  async cancelUpload(uploadId: number): Promise<ApiResponse<import('../types/youtube').ScheduledUpload>> {
+    return request<ApiResponse<import('../types/youtube').ScheduledUpload>>(`/youtube/scheduled-uploads/${uploadId}/cancel_upload/`, {
+      method: 'POST',
+    });
+  },
+
   async sendDailyReport(chatId?: string): Promise<ApiResponse<{ report_text: string; telegram_sent: boolean; chat_id: string | null }>> {
     return request<ApiResponse<{ report_text: string; telegram_sent: boolean; chat_id: string | null }>>('/youtube/daily-analytics/send_daily_report/', {
       method: 'POST',
@@ -152,3 +178,4 @@ export const youtubeService = {
     });
   },
 };
+

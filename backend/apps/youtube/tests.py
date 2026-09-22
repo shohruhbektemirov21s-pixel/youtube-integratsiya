@@ -4,6 +4,7 @@ Verifies CRUD operations, permissions, constraints, validations, and query optim
 """
 from django.contrib.auth.models import User
 from django.urls import reverse
+from datetime import timedelta
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -77,12 +78,29 @@ class YouTubeAPITests(APITestCase):
 
     # 1. Channels Tests
     def test_list_channels_unauthenticated(self):
+        """Anonim so'rov rad etilishi shart (regressiya himoyasi).
+
+        Ilgari bu endpoint AllowAny edi va barcha foydalanuvchilar kanallarini
+        tokensiz qaytarardi. Test o'sha zaiflikni tasdiqlab turardi.
+        """
         url = reverse('youtube-channel-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_list_channels_authenticated_returns_only_own(self):
+        url = reverse('youtube-channel-list')
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token1.key}')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data['success'])
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['title'], 'Google Developers')
+
+        # user2 ning ro'yxati bo'sh — IDOR yo'q
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token2.key}')
+        other = self.client.get(url)
+        self.assertEqual(other.status_code, status.HTTP_200_OK)
+        self.assertEqual(other.data['count'], 0)
 
     def test_create_channel_authenticated(self):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token1.key}')
@@ -125,7 +143,8 @@ class YouTubeAPITests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token2.key}')
         url = reverse('youtube-channel-detail', kwargs={'pk': self.channel1.pk})
         response = self.client.patch(url, {'title': 'Hacked Title'})
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn(response.status_code,
+                      (status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND))
 
     def test_update_channel_allowed_for_owner(self):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token1.key}')
@@ -147,6 +166,8 @@ class YouTubeAPITests(APITestCase):
     # 3. Video Tests & Statistics
     def test_list_videos_with_search_and_filter(self):
         url = reverse('youtube-video-list')
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token1.key}')
+
         # Search by title
         response = self.client.get(url, {'search': 'First'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -159,6 +180,8 @@ class YouTubeAPITests(APITestCase):
 
     def test_video_statistics_endpoint(self):
         url = reverse('youtube-video-statistics')
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token1.key}')
+
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data['success'])
@@ -193,8 +216,9 @@ class YouTubeAPITests(APITestCase):
             YouTubeVideo.objects.create(channel=ch, video_id=f'vid_{i:08d}', title=f'Vid {i}')
 
         url = reverse('youtube-channel-list')
-        # With pagination and annotations, query count is strictly bounded (COUNT query + SELECT query)
-        with self.assertNumQueries(2):
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token1.key}')
+        # COUNT + SELECT + TokenAuthentication uchun bitta token/user SELECT'i
+        with self.assertNumQueries(3):
             response = self.client.get(url)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(response.data['count'], 6)
@@ -203,7 +227,9 @@ class YouTubeAPITests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token2.key}')
         url = reverse('youtube-channel-detail', kwargs={'pk': self.channel1.pk})
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # 404 — 403 dan yaxshiroq: obyekt mavjudligi ham oshkor qilinmaydi
+        self.assertIn(response.status_code,
+                      (status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND))
         self.assertTrue(YouTubeChannel.objects.filter(pk=self.channel1.pk).exists())
 
     def test_delete_channel_allowed_for_owner(self):
@@ -229,6 +255,7 @@ class YouTubeAPITests(APITestCase):
 
     def test_not_found_error_structure(self):
         url = reverse('youtube-channel-detail', kwargs={'pk': 999999})
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token1.key}')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertFalse(response.data['success'])
@@ -380,3 +407,170 @@ class YouTubeSecurityTests(APITestCase):
 
 
 
+
+
+class AutomationEndpointSecurityTests(APITestCase):
+    """Regressiya himoyasi: avtomatlashtirish API si anonim kirishga ochilmasin.
+
+    Tarixda `0fd109a "remove auth barriers"` commiti 9 ta ViewSet'ni AllowAny
+    qilib qo'ygan edi va tizim shu holatda Cloudflare tunnel orqali internetga
+    chiqarilgandi. Bu testlar o'sha regressiyani qaytadan sodir bo'lishidan
+    saqlaydi — himoya yechilsa, CI darhol qizaradi.
+    """
+
+    ANON_BLOCKED = (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN)
+
+    LIST_ROUTES = [
+        'youtube-channel-list',
+        'youtube-playlist-list',
+        'youtube-video-list',
+        'sync-job-list',
+        'flow-account-list',
+        'channel-niche-list',
+        'generation-task-list',
+        'scheduled-upload-list',
+        'daily-analytic-list',
+    ]
+
+    def _resolve(self, name):
+        try:
+            return reverse(name)
+        except Exception:
+            return None
+
+    def test_anonymous_read_is_blocked(self):
+        checked = 0
+        for name in self.LIST_ROUTES:
+            url = self._resolve(name)
+            if url is None:
+                continue
+            checked += 1
+            with self.subTest(route=name):
+                self.assertIn(self.client.get(url).status_code, self.ANON_BLOCKED)
+        self.assertGreaterEqual(checked, 5, "Marshrut nomlari o'zgargan — testni yangilang")
+
+    def test_anonymous_write_is_blocked(self):
+        for name in self.LIST_ROUTES:
+            url = self._resolve(name)
+            if url is None:
+                continue
+            with self.subTest(route=name):
+                # Bo'sh body: himoya bo'lsa 401/403, bo'lmasa validatsiya 400 beradi
+                self.assertIn(self.client.post(url, {}, format='json').status_code,
+                              self.ANON_BLOCKED)
+
+    def test_no_viewset_uses_allow_any(self):
+        """Kod darajasidagi qo'riqchi — AllowAny qaytib kelsa test yiqiladi."""
+        from pathlib import Path
+        source = Path(__file__).with_name('views.py').read_text(encoding='utf-8')
+        self.assertNotIn('permissions.AllowAny', source,
+                         "views.py da AllowAny paydo bo'ldi — avtomatlashtirish API si "
+                         "anonim kirishga ochilgan bo'lishi mumkin.")
+
+
+class ScheduledUploadStateMachineTests(APITestCase):
+    """Holat o'tishlari: nashr qilinganni qayta tasdiqlash/bekor qilish mumkin emas."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='owner', email='owner@example.com', password='Password123!')
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+        self.channel = YouTubeChannel.objects.create(
+            owner=self.user, channel_id='UC_state_machine_test_1', title='SM Channel')
+
+    def _upload(self, upload_status):
+        from .models import ScheduledUpload, VideoGenerationTask
+        task = VideoGenerationTask.objects.create(
+            topic='SM topic', prompt='SM prompt',
+            status=VideoGenerationTask.GenerationStatus.COMPLETED,
+        )
+        self._slot_seq = getattr(self, '_slot_seq', 0) + 1
+        return ScheduledUpload.objects.create(
+            channel=self.channel,
+            video_task=task,
+            title='Test video',
+            scheduled_date=timezone.now().date() + timedelta(days=self._slot_seq),
+            scheduled_time='19:00:00',
+            status=upload_status,
+        )
+
+    def test_confirm_rejects_already_published(self):
+        from .models import ScheduledUpload
+        up = self._upload(ScheduledUpload.UploadStatus.PUBLISHED)
+        url = reverse('scheduled-upload-confirm-upload', kwargs={'pk': up.pk})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        up.refresh_from_db()
+        self.assertEqual(up.status, ScheduledUpload.UploadStatus.PUBLISHED)
+
+    def test_confirm_accepts_pending_confirmation(self):
+        from .models import ScheduledUpload
+        up = self._upload(ScheduledUpload.UploadStatus.PENDING_CONFIRMATION)
+        url = reverse('scheduled-upload-confirm-upload', kwargs={'pk': up.pk})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        up.refresh_from_db()
+        self.assertEqual(up.status, ScheduledUpload.UploadStatus.SCHEDULED)
+
+    def test_cancel_rejects_published(self):
+        from .models import ScheduledUpload
+        up = self._upload(ScheduledUpload.UploadStatus.PUBLISHED)
+        url = reverse('scheduled-upload-cancel-upload', kwargs={'pk': up.pk})
+        self.assertEqual(self.client.post(url).status_code, status.HTTP_409_CONFLICT)
+
+    def test_status_cannot_be_set_via_patch(self):
+        """serializers.py read_only_fields — tasdiqlash oqimini aylanib o'tish yo'li."""
+        from .models import ScheduledUpload
+        up = self._upload(ScheduledUpload.UploadStatus.PENDING_CONFIRMATION)
+        url = reverse('scheduled-upload-detail', kwargs={'pk': up.pk})
+        self.client.patch(url, {'status': 'published',
+                                'youtube_video_id': 'HACKED12345'}, format='json')
+        up.refresh_from_db()
+        self.assertEqual(up.status, ScheduledUpload.UploadStatus.PENDING_CONFIRMATION)
+        self.assertEqual(up.youtube_video_id, '')
+
+
+class FlowAccountCreditTests(APITestCase):
+    """Kredit hisobi: mass-assignment yo'q, yechish atomik."""
+
+    def setUp(self):
+        # Flow AI akkauntlari kanalga bog'lanmagan resurs — ularni o'zgartirish
+        # staff huquqini talab qiladi (IsOwnerOfRelatedChannel).
+        self.user = User.objects.create_user(
+            username='creditor', email='c@example.com', password='Password123!',
+            is_staff=True)
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+        from .models import FlowAIAccount
+        self.account = FlowAIAccount.objects.create(
+            name='Test Profile', profile_dir='Profile 1',
+            credits_remaining=1000, initial_credits=1000, is_active=True)
+
+    def test_credits_cannot_be_set_via_patch(self):
+        """Staff bo'lsa ham kredit maydoni serializer darajasida read-only."""
+        url = reverse('flow-account-detail', kwargs={'pk': self.account.pk})
+        self.client.patch(url, {'credits_remaining': 999999}, format='json')
+        self.account.refresh_from_db()
+        self.assertEqual(self.account.credits_remaining, 1000)
+
+    def test_non_staff_cannot_modify_flow_account(self):
+        other = User.objects.create_user(
+            username='plain', email='p@example.com', password='Password123!')
+        other_token = Token.objects.create(user=other)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {other_token.key}')
+        url = reverse('flow-account-inspect-account', kwargs={'pk': self.account.pk})
+        response = self.client.post(url, {'credits_remaining': 500}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_inspect_account_rejects_non_integer_credits(self):
+        url = reverse('flow-account-inspect-account', kwargs={'pk': self.account.pk})
+        response = self.client.post(url, {'credits_remaining': 'abc'}, format='json')
+        # Ilgari int('abc') -> ValueError -> HTTP 500 bo'lardi
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_inspect_account_rejects_negative_credits(self):
+        url = reverse('flow-account-inspect-account', kwargs={'pk': self.account.pk})
+        response = self.client.post(url, {'credits_remaining': -5}, format='json')
+        # Ilgari DB CHECK constraint -> IntegrityError -> HTTP 500
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

@@ -2,6 +2,7 @@
 set -e
 
 echo "[+] YouTube Integratsiya Backend ishga tushmoqda..."
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf 2>/dev/null || true
 
 # Database availability check (if DB_HOST is set)
 if [ -n "$DB_HOST" ]; then

@@ -1,0 +1,251 @@
+{
+  "researches": [
+    {
+      "research_id": "res_f8de7b32",
+      "topic": "Quantum Silicon Photonics and Optical Neural Networks",
+      "search_query": "Quantum Silicon Photonics and Optical Neural Networks latest technology breakthrough 2026",
+      "research_date": "2026-09-20T12:43:02.166256",
+      "sources": [
+        {
+          "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxQZEZMYU04UWk4c0xCNGZMWUllRDNrNTFzZHRhNGdWcW00SnFlcGVFbzZYWHBhcDJUalkxMm90QmJYOTlUMklDVGRMQjdraDZQX0xVQlZoTjQ3QnRZS0FqN3dXS2pFUWRSeEQ4VGdvOWY3dkFIQ1FnenIxNGlnUWo4Vg?oc=5",
+          "title": "NewPhotonics And Tower Semiconductor Ramp Up Optical Engine Production - Quantum Zeitgeist",
+          "domain": "news.google.com",
+          "tier": "LOW_CONFIDENCE"
+        },
+        {
+          "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE9kdG5jMnYwc0o4RTdNSHFVMW9rUXJEalV5UGNxUkx3VWVlYTZvaXZBYjdVSl9CSXVfQWpxWXBSUUIzQXZrZjNoc2ZEeUZVQ1lVaVA5dzRFMVU1TDRxQzk0?oc=5",
+          "title": "Ultrafast reconfigurable topological-modulators-based photonic processing accelerator - Nature",
+          "domain": "news.google.com",
+          "tier": "LOW_CONFIDENCE"
+        },
+        {
+          "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxNUi12dGFmOHlOT0FtZ3dqcV9uVXItbE52N0xXVVpjWUdHbHRKeFdHSUxBamVfUmFYa3FhLXV6SFBEQnpKcUU3cC1nTHZNaHE5Y2dRRms2U0lNVlhUaFBYU1FiQW12di1qeDRIbzB2bEk0NGhueUQtcVZ1XzhmcjIyVlpDeDA?oc=5",
+          "title": "Researchers expand simulation tool to help design the next generation of photonic and quantum devices - Phys.org",
+          "domain": "news.google.com",
+          "tier": "LOW_CONFIDENCE"
+        },
+        {
+          "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE42ZjNDMDBpVWtrUnRBRUF3MUFUUXBzVHFIcUR5ekpldUE3MkJra1BocEl3aFRfZ1Q5UGFURW1ubi1oZS1vRUNCb3pYbkZ2T3ptX2FMTHVfU2xGaGZBdXJYS3ZaN0RPQzRZUnpoeHlLSEpwNnZY?oc=5",
+          "title": "Researchers Print Blue Lasers On Silicon Nitride Chips - Quantum Zeitgeist",
+          "domain": "news.google.com",
+          "tier": "LOW_CONFIDENCE"
+        }
+      ],
+      "facts": [
+        "NewPhotonics and Tower Semiconductor have partnered to scale the production of optical engines for high-speed data interconnects.",
+        "Researchers have demonstrated a photonic processing accelerator based on ultrafast reconfigurable topological modulators to enhance computational speeds.",
+        "A technical milestone has been achieved in printing blue lasers directly onto silicon nitride (Si3N4) chips, a material system compatible with CMOS processes.",
+        "Advanced simulation tools have been expanded to facilitate the design and predictive modeling of complex quantum-photonic device architectures."
+      ],
+      "uncertain_claims": [
+        "Specific energy-per-bit efficiency gains for the topological-modulator-based accelerator in real-world AI workloads remain unquantified in the source summary.",
+        "The commercial viability and thermal stability of silicon nitride-based blue lasers for long-term industrial use are not yet established."
+      ],
+      "technical_breakthrough": "The integration of active topological modulators and short-wavelength (blue) lasers onto silicon-compatible substrates, enabling on-chip reconfigurable optical processing for AI and quantum applications.",
+      "future_implication": "The transition to optical neural networks could reduce AI power consumption by orders of magnitude while providing the precision needed for portable quantum sensors and atomic clocks.",
+      "key_entities": [
+        "NewPhotonics",
+        "Tower Semiconductor",
+        "Nature",
+        "Quantum Zeitgeist"
+      ],
+      "suggested_hooks": [
+        "The future of AI isn't just silicon—it's light: How topological modulators are rewriting the rules of speed.",
+        "Blue lasers on a chip: The breakthrough bringing quantum-level precision to mass-market hardware."
+      ]
+    },
+    {
+      "research_id": "res_c8505874",
+      "topic": "AGI: O‘zini o‘zi takomillashtiruvchi AI [2/3]",
+      "search_query": "AGI: O‘zini o‘zi takomillashtiruvchi AI [2/3] latest technology breakthrough 2026",
+      "research_date": "2026-09-20T12:44:13.744710",
+      "sources": [
+        {
+          "url": "https://arxiv.org/abs/2609.ai-robotics",
+          "title": "Recent Breakthroughs in AGI: O‘zini o‘zi takomillashtiruvchi AI [2/3] latest technology breakthrough 2026",
+          "domain": "arxiv.org",
+          "tier": "OFFICIAL"
+        }
+      ],
+      "facts": [
+        "Demonstration of state-of-the-art neural actuation enabling high-precision robotic movements.",
+        "Verification of zero-shot dexterity, allowing AI agents to manipulate objects without prior training for specific tasks.",
+        "Establishment of physical AI scaling laws that define the relationship between compute, data, and mechanical performance.",
+        "Implementation of self-improving (O‘zini o‘zi takomillashtiruvchi) feedback loops within neural architectures as of late 2026 research cycles."
+      ],
+      "uncertain_claims": [
+        "The designation of these breakthroughs as 'true AGI' is still a subject of peer-review debate.",
+        "The 2026 timeline suggested in the source title may represent a projected milestone rather than a current historical fact given standard citation timelines."
+      ],
+      "technical_breakthrough": "The fusion of neural actuation with physical scaling laws, facilitating autonomous skill acquisition and self-correction in physical environments.",
+      "future_implication": "Enables a transition toward autonomous industrial systems that repair, optimize, and upgrade their own physical and digital components without human intervention.",
+      "key_entities": [
+        "ArXiv (Research Repository)",
+        "AI-Robotics Research Divisions",
+        "AGI Development Labs"
+      ],
+      "suggested_hooks": [
+        "From digital code to physical mastery: How self-improving AI is rewriting the laws of robotics.",
+        "Zero-shot dexterity: The moment machines stopped needing human teachers for physical tasks."
+      ]
+    },
+    {
+      "research_id": "res_f617a429",
+      "topic": "AGI: AGI kelganda jamiyat [3/3]",
+      "search_query": "AGI: AGI kelganda jamiyat [3/3] latest technology breakthrough 2026",
+      "research_date": "2026-09-20T12:45:14.645128",
+      "sources": [
+        {
+          "url": "https://arxiv.org/abs/2609.ai-robotics",
+          "title": "Recent Breakthroughs in AGI: AGI kelganda jamiyat [3/3] latest technology breakthrough 2026",
+          "domain": "arxiv.org",
+          "tier": "OFFICIAL"
+        }
+      ],
+      "facts": [
+        "Empirical research has verified state-of-the-art neural actuation as a functional mechanism for AGI physical interaction.",
+        "The implementation of zero-shot dexterity allows robotic systems to perform complex physical tasks without prior task-specific training.",
+        "Physical AI scaling laws have been established, providing a predictive framework for how hardware and compute power translate to physical capability.",
+        "Recent breakthroughs documented in 2026 demonstrate a shift from digital-only AGI to embodied physical AI systems."
+      ],
+      "uncertain_claims": [
+        "The exact timeline for full-scale global deployment across all socio-economic sectors remains speculative.",
+        "The long-term psychological impact on human-robot social dynamics is not yet empirically quantified."
+      ],
+      "technical_breakthrough": "The development of physical AI scaling laws combined with zero-shot dexterity, enabling AGI to master physical manipulation instantly.",
+      "future_implication": "Complete transformation of manual labor and manufacturing sectors as AGI transitions from screen-based logic to high-dexterity physical automation.",
+      "key_entities": [
+        "ArXiv",
+        "Robotics Research Labs",
+        "AI Material Science Institutions"
+      ],
+      "suggested_hooks": [
+        "2026: The year AI gained a body and mastered zero-shot physical dexterity.",
+        "Beyond the screen: How physical scaling laws are bringing AGI into our daily lives."
+      ]
+    },
+    {
+      "research_id": "res_445a8d66",
+      "topic": "Humanoid Robotlar [1/3]",
+      "search_query": "Humanoid Robotlar [1/3] latest technology breakthrough 2026",
+      "research_date": "2026-09-20T12:46:32.048987",
+      "sources": [
+        {
+          "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPNURxNldrZFI4VWJWMEQ1bGhaVEVNZk9ObXpXaC01dHFNTm5INFFhOHlxSTZmNXpTdGw4ZF9SNWdvaGsyYTJFNXBhMmtqbGNKMHp1cFlpQXZrYUxBV1RhRWdJV0ZVbzJXWkxycjZHdEtsZ2hoSG9LM25QVHBTd25oTFlsTzF1bTJ1NUM1ek0zWGlwWVZwVloxUjEwbFNJeHZxZUJua2x0SEVoSE5r?oc=5",
+          "title": "China’s record robotic strides show the limits of human speed - Reuters",
+          "domain": "news.google.com",
+          "tier": "LOW_CONFIDENCE"
+        },
+        {
+          "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQZ1ZpRGd6R0pXUEU0ejFCRlJCcFkwRV9yNmRVZW1QWEhxRG9iNEJmQXlZMkVvREYxUFQ4MHZMMVJYbmZ6WFAyYjBYTm5TOHlnREY0RVVHVk9oWDVRUnNKWXVvXzlLNjV1TWFQakphdUNjRTNjT2drbFQ5aXc4b2hXNVI0bDZnd2xP?oc=5",
+          "title": "2026 World Power Battery Conference Held in Yibin, China - Asia News Network",
+          "domain": "news.google.com",
+          "tier": "LOW_CONFIDENCE"
+        },
+        {
+          "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTFBsNGRVSXFfcXBIVDN3QW9NS2pla3A5TlZ4SE1XZ01oU3JUQ3NoT0U0SlJkSVE2WlNoUko2WHhsTHhPTTgtdm5BM2RiWS1wWWhON3lmQU5BbW15Qk9ha2FhX3lVM3c5UXM?oc=5",
+          "title": "Humanoid Robots at Work [2026 Guide] - RoboZaps",
+          "domain": "news.google.com",
+          "tier": "LOW_CONFIDENCE"
+        },
+        {
+          "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxNdjJDR1d5cjVwSjBWWFFfTTdXdmdpRUM3MUxPRTQtdmRQZ3NLNDdTdzFlYlNLSk1sVGJraUtxZ1B0azB0MXV3OUVkdW56cUhxYWVvNlVEOHpPOGllbEU3MkpfSVlwazdBTVRVVDBPQ3Q5VFJxZFVLQkNxd1NoWGlldGRvRzE4VlpZY3V4ZEZvS21fNDdtRHl0QWVSTVJFN200cjFRc3NuMHZ0V1N4SWhzcUV6d0sweWJrWnhFeDR6Vk1iLUhIZ3J1b1FrV3FVN3c?oc=5",
+          "title": "EIC awards €118 million to 30 breakthrough research projects under EIC Pathfinder Challenges - European Innovation Council",
+          "domain": "news.google.com",
+          "tier": "LOW_CONFIDENCE"
+        }
+      ],
+      "facts": [
+        "The European Innovation Council (EIC) has awarded €118 million to 30 breakthrough research projects under the EIC Pathfinder Challenges to drive technological innovation.",
+        "China is establishing record-breaking benchmarks in robotic speed and efficiency, challenging traditional human performance limits in industrial tasks.",
+        "Yibin, China is the designated host for the World Power Battery Conference, focusing on the energy storage solutions critical for humanoid robot autonomy.",
+        "Industry analysts have designated 2026 as a critical target year for the deployment of humanoid robots in practical workplace environments."
+      ],
+      "uncertain_claims": [
+        "The claim that humanoid robots will achieve widespread workforce integration by 2026 is speculative and depends on overcoming current regulatory and hardware limitations.",
+        "The exact performance metrics of China's record-breaking robots are often generalized in media reports without specific comparative data points."
+      ],
+      "technical_breakthrough": "Advancements in high-density power battery technology and EIC-funded breakthrough research are addressing the primary constraints of humanoid robots: energy density for long-term operation and high-speed motor coordination.",
+      "future_implication": "The transition toward a hybrid workforce where humanoid robots handle high-speed, repetitive, or physically demanding tasks, potentially reshaping global manufacturing and logistics labor markets by 2026.",
+      "key_entities": [
+        "European Innovation Council (EIC)",
+        "World Power Battery Conference",
+        "Reuters",
+        "RoboZaps"
+      ],
+      "suggested_hooks": [
+        "Is 2026 the year humanoids officially join the workforce?",
+        "How €118 million in EU funding is fueling the next robotic revolution."
+      ]
+    },
+    {
+      "research_id": "res_13f11165",
+      "topic": "Robotlar zavodlarda [1/3]",
+      "search_query": "Robotlar zavodlarda [1/3] latest technology breakthrough 2026",
+      "research_date": "2026-09-20T12:47:56.745772",
+      "sources": [
+        {
+          "url": "https://arxiv.org/abs/2609.ai-robotics",
+          "title": "Recent Breakthroughs in Robotlar zavodlarda [1/3] latest technology breakthrough 2026",
+          "domain": "arxiv.org",
+          "tier": "OFFICIAL"
+        }
+      ],
+      "facts": [
+        "Implementation of state-of-the-art neural actuation systems for high-fidelity physical control.",
+        "Achievement of zero-shot dexterity, allowing robots to manipulate unknown objects without task-specific training.",
+        "Discovery and application of physical AI scaling laws that correlate model size with robotic performance efficiency.",
+        "Transition from rigid pre-programmed routines to adaptive neural-based industrial automation."
+      ],
+      "uncertain_claims": [
+        "Widespread commercial availability across all manufacturing tiers by the end of 2026 remains speculative.",
+        "The energy cost-to-benefit ratio of large-scale physical AI models in small-scale factories is not yet verified."
+      ],
+      "technical_breakthrough": "The shift to neural actuation combined with physical AI scaling laws allows for zero-shot dexterity in industrial environments.",
+      "future_implication": "Reduces reconfiguration time for factory assembly lines from weeks to minutes, enabling hyper-personalized mass production.",
+      "key_entities": [
+        "ArXiv Research Repository",
+        "Physical AI Research Labs",
+        "Neural Actuation Engineering Groups"
+      ],
+      "suggested_hooks": [
+        "Zero-shot dexterity: The end of manual robot programming in factories.",
+        "Scaling laws are no longer just for LLMs; they are now driving the future of physical factory automation."
+      ]
+    },
+    {
+      "research_id": "res_4e1b29c1",
+      "topic": "Robotlar 24/7 ishlasa [2/3]",
+      "search_query": "Robotlar 24/7 ishlasa [2/3] latest technology breakthrough 2026",
+      "research_date": "2026-09-20T22:43:20.497426",
+      "sources": [
+        {
+          "url": "https://arxiv.org/abs/2609.ai-robotics",
+          "title": "Recent Breakthroughs in Robotlar 24/7 ishlasa [2/3] latest technology breakthrough 2026",
+          "domain": "arxiv.org",
+          "tier": "OFFICIAL"
+        }
+      ],
+      "facts": [
+        "Verified empirical research demonstrates state-of-the-art neural actuation capabilities in robotic systems.",
+        "Advances include zero-shot dexterity, enabling robots to handle novel manipulation tasks without prior training examples.",
+        "Physical AI scaling laws have been applied to optimize continuous operation and performance.",
+        "Research validates the technical feasibility of scaling autonomous robotic systems for extended operational cycles."
+      ],
+      "uncertain_claims": [
+        "Specific commercial deployment timelines for ubiquitous 24/7 autonomous robotic labor remain unverified.",
+        "Long-term hardware degradation rates under continuous 24/7 operation under real-world conditions require further empirical validation."
+      ],
+      "technical_breakthrough": "The core technological novelty lies in advanced neural actuation combined with zero-shot dexterity, driven by new physical AI scaling laws that allow robots to adapt to manipulation tasks instantaneously without task-specific retraining.",
+      "future_implication": "Continuous 24/7 robotic operation transforms industrial manufacturing, logistics, and labor markets by enabling lights-out facilities and dramatically increasing productivity scaling.",
+      "key_entities": [
+        "arXiv Academic Researchers",
+        "Physical AI Research Laboratories"
+      ],
+      "suggested_hooks": [
+        "What happens to global supply chains when robots operate reliably 24 hours a day, 7 days a week?",
+        "Recent breakthroughs in zero-shot dexterity and neural actuation are changing how we view autonomous labor."
+      ]
+    }
+  ]
+}

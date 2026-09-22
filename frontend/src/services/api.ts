@@ -3,7 +3,7 @@
  */
 import type { ApiErrorResponse } from '../types/api';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 const TOKEN_STORAGE_KEY = 'youtube_auth_token';
 
 export class ApiError extends Error {
@@ -34,10 +34,17 @@ export function removeAuthToken(): void {
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
+  /** Millisekund. Uzoq operatsiyalar (video generatsiya) uchun oshiring. */
+  timeoutMs?: number;
 }
 
+/** 401 kelganda AuthProvider qayta tekshirishi uchun signal. */
+export const AUTH_EXPIRED_EVENT = 'auth:expired';
+
+const DEFAULT_TIMEOUT_MS = 30_000;
+
 export async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const { params, headers, ...restOptions } = options;
+  const { params, headers, timeoutMs = DEFAULT_TIMEOUT_MS, signal, ...restOptions } = options;
 
   let url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
@@ -62,10 +69,16 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
     ...headers,
   };
 
+  // Timeout'siz fetch cheksiz kutardi: backend band bo'lsa tugma abadiy
+  // "Tayyorlanmoqda..." holatida qotib qolardi (finally hech qachon ishlamasdi).
+  const timeoutSignal = AbortSignal.timeout(timeoutMs);
+  const mergedSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
+
   try {
     const response = await fetch(url, {
       ...restOptions,
       headers: requestHeaders,
+      signal: mergedSignal,
     });
 
     if (response.status === 204) {
@@ -77,6 +90,12 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
     const data = isJson ? await response.json() : null;
 
     if (!response.ok) {
+      if (response.status === 401) {
+        // Token yaroqsiz/muddati o'tgan — tozalaymiz va darvozani xabardor qilamiz
+        removeAuthToken();
+        window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+      }
+
       if (data && typeof data === 'object' && 'error' in data) {
         const errPayload = data as ApiErrorResponse;
         throw new ApiError(
@@ -95,6 +114,12 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
   } catch (err) {
     if (err instanceof ApiError) {
       throw err;
+    }
+    if (err instanceof DOMException && err.name === 'TimeoutError') {
+      throw new ApiError('Server javob bermadi (vaqt tugadi)', 'Timeout', null, 0);
+    }
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new ApiError('So‘rov bekor qilindi', 'Aborted', null, 0);
     }
     throw new ApiError(
       err instanceof Error ? err.message : 'Tarmoqqa ulanishda xatolik yuz berdi',

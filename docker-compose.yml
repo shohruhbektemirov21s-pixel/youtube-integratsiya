@@ -1,3 +1,7 @@
+# Project nomi qat'iy belgilangan — papka nomi o'zgarsa ham konteynerlar bir xil
+# loyihaga tegishli bo'lib qoladi (aks holda 'container name already in use' xatosi).
+name: youtubeintegratsiya
+
 services:
   db:
     image: postgres:16-alpine
@@ -17,6 +21,19 @@ services:
     networks:
       - app_network
 
+  redis:
+    image: redis:7-alpine
+    container_name: youtube_integratsiya_redis
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - app_network
+
   backend:
     build:
       context: ./backend
@@ -27,8 +44,11 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
+      REDIS_URL: redis://redis:6379/1
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     volumes:
       - ./backend:/app

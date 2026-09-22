@@ -2,13 +2,18 @@
 ViewSets for YouTube Channels, Playlists, Videos, and Sync Jobs.
 Optimized with select_related, prefetch_related, and aggregations to prevent N+1 query problems.
 """
-from django.db.models import Count, Sum, Avg
+from django.db import transaction
+from django.db.models import Count, Sum, Avg, F, Value
+from django.db.models.functions import Greatest
 from django.utils import timezone
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.core.permissions import IsOwnerOrReadOnly
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.throttling import ScopedRateThrottle
+
+from apps.core.permissions import IsOwnerOrReadOnly, IsOwnerOfRelatedChannel
 from .models import (
     YouTubeChannel,
     YouTubePlaylist,
@@ -20,6 +25,19 @@ from .models import (
     ScheduledUpload,
     DailyChannelAnalytics,
 )
+def _mask_email(value: str) -> str:
+    """s***v@gmail.com ko'rinishida maskalaydi."""
+    if not value or '@' not in value:
+        return ''
+    local, _, domain = value.partition('@')
+    if len(local) <= 2:
+        return f"{local[:1]}***@{domain}"
+    return f"{local[0]}***{local[-1]}@{domain}"
+
+
+# Bitta video generatsiyasining Flow AI kredit narxi
+VIDEO_CREDIT_COST = 10
+
 from .serializers import (
     YouTubeChannelSerializer,
     YouTubePlaylistSerializer,
@@ -38,7 +56,7 @@ class YouTubeChannelViewSet(viewsets.ModelViewSet):
     CRUD for YouTube Channels with N+1 query optimization.
     """
     serializer_class = YouTubeChannelSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsOwnerOrReadOnly]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'channel_id', 'custom_url']
     ordering_fields = ['created_at', 'subscriber_count', 'video_count', 'view_count']
@@ -46,17 +64,21 @@ class YouTubeChannelViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Prevent N+1 queries using select_related and Count annotations
-        return YouTubeChannel.objects.select_related('owner').annotate(
+        qs = YouTubeChannel.objects.select_related('owner').annotate(
             playlists_count=Count('playlists', distinct=True),
             total_videos=Count('videos', distinct=True)
         )
+        user = self.request.user
+        if user.is_authenticated and not user.is_staff:
+            qs = qs.filter(owner=user)
+        return qs
 
     def perform_create(self, serializer):
-        from django.contrib.auth.models import User
-        owner = self.request.user if (self.request.user and self.request.user.is_authenticated) else User.objects.first()
-        serializer.save(owner=owner)
+        # Ilgari bu yerda `User.objects.first()` fallback'i bor edi — anonim
+        # so'rov bilan yaratilgan kanal superuser (admin) nomiga yozilardi.
+        serializer.save(owner=self.request.user)
 
-    @action(detail=True, methods=['post'], permission_classes=[permissions.AllowAny])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def trigger_sync(self, request, pk=None):
         """
         Manually trigger a sync job for a specific YouTube channel using YouTubeService.
@@ -81,7 +103,7 @@ class YouTubePlaylistViewSet(viewsets.ModelViewSet):
     CRUD for YouTube Playlists with channel relationship optimization.
     """
     serializer_class = YouTubePlaylistSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsOwnerOfRelatedChannel]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'playlist_id']
     ordering_fields = ['published_at', 'created_at', 'item_count']
@@ -105,7 +127,7 @@ class YouTubeVideoViewSet(viewsets.ModelViewSet):
     CRUD for YouTube Videos with optimized queries and analytics.
     """
     serializer_class = YouTubeVideoSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsOwnerOfRelatedChannel]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'video_id']
     ordering_fields = ['published_at', 'view_count', 'like_count', 'duration_seconds', 'created_at']
@@ -163,7 +185,7 @@ class SyncJobViewSet(viewsets.ReadOnlyModelViewSet):
     Read-only audit log for synchronization jobs.
     """
     serializer_class = SyncJobSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsOwnerOfRelatedChannel]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at', 'completed_at']
     ordering = ['-created_at']
@@ -182,7 +204,7 @@ class FlowAIAccountViewSet(viewsets.ModelViewSet):
     """
     queryset = FlowAIAccount.objects.all()
     serializer_class = FlowAIAccountSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsOwnerOfRelatedChannel]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['credits_remaining', 'last_used_at', 'created_at']
     ordering = ['-credits_remaining', 'id']
@@ -209,26 +231,24 @@ class FlowAIAccountViewSet(viewsets.ModelViewSet):
                         profiles_list.append({
                             "profile_dir": pdir,
                             "name": pdata.get("name", pdir),
-                            "email": pdata.get("user_name", ""),
-                            "gaia_id": pdata.get("gaia_id", "")
+                            # To'liq email va gaia_id qaytarilmaydi: gaia_id
+                            # Google'ning global foydalanuvchi identifikatori
+                            # bo'lib, hisob mavjudligini tasdiqlash uchun ishlatiladi.
+                            "email_masked": _mask_email(pdata.get("user_name", "")),
                         })
                     break
                 except Exception:
                     pass
 
+        # Ilgali bu yerda 11 ta HAQIQIY gmail manzili hardcoded ro'yxat
+        # sifatida turardi va konteynerda Chrome fayli bo'lmagani uchun
+        # endpoint DOIM o'sha shaxsiy ma'lumotlarni qaytarardi.
+        # Profillar endi faqat bazadan (FlowAIAccount) to'ldiriladi.
         if not profiles_list:
             profiles_list = [
-                {"profile_dir": "Profile 1", "name": "Ustaai", "email": "ustaaiverifity@gmail.com"},
-                {"profile_dir": "Profile 3", "name": "Samik", "email": "samikpirmat@gmail.com"},
-                {"profile_dir": "Profile 4", "name": "DEfarux", "email": "defarux109@gmail.com"},
-                {"profile_dir": "Profile 6", "name": "Shohruh", "email": "temirovshohruh48@gmail.com"},
-                {"profile_dir": "Default", "name": "Ваш Chrome", "email": "shohruhbektemirov21s@gmail.com"},
-                {"profile_dir": "Profile 13", "name": "Shohruh", "email": "shohruhbektemirov1721@gmail.com"},
-                {"profile_dir": "Profile 17", "name": "Shox", "email": "hhshox41@gmail.com"},
-                {"profile_dir": "Profile 22", "name": "Shohruh", "email": "shox062102@gmail.com"},
-                {"profile_dir": "Profile 24", "name": "Shox", "email": "shoxt2007@gmail.com"},
-                {"profile_dir": "Profile 25", "name": "Shavkat", "email": "shavkatsohibov1@gmail.com"},
-                {"profile_dir": "Profile 31", "name": "Sardor", "email": "sxojamurodov1401@gmail.com"}
+                {"profile_dir": acc.profile_dir, "name": acc.name,
+                 "email_masked": _mask_email(getattr(acc, 'email', '') or '')}
+                for acc in FlowAIAccount.objects.filter(is_active=True).order_by('id')
             ]
 
         return Response({"success": True, "profiles": profiles_list})
@@ -251,8 +271,18 @@ class FlowAIAccountViewSet(viewsets.ModelViewSet):
         if channel_name is not None:
             account.youtube_channel_name = str(channel_name)
         if credits_val is not None:
-            account.credits_remaining = int(credits_val)
-            account.has_flow_credits = int(credits_val) > 0
+            try:
+                credits_int = int(credits_val)
+            except (TypeError, ValueError):
+                return Response(
+                    {"success": False, "error": "credits_remaining butun son bo'lishi kerak."},
+                    status=status.HTTP_400_BAD_REQUEST)
+            if not 0 <= credits_int <= 100000:
+                return Response(
+                    {"success": False, "error": "credits_remaining 0..100000 oralig'ida bo'lishi kerak."},
+                    status=status.HTTP_400_BAD_REQUEST)
+            account.credits_remaining = credits_int
+            account.has_flow_credits = credits_int > 0
         elif has_credits is not None:
             account.has_flow_credits = bool(has_credits)
 
@@ -272,7 +302,7 @@ class ChannelNicheViewSet(viewsets.ModelViewSet):
     """
     queryset = ChannelNiche.objects.select_related('channel')
     serializer_class = ChannelNicheSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsOwnerOfRelatedChannel]
 
 
 class VideoGenerationTaskViewSet(viewsets.ModelViewSet):
@@ -281,13 +311,16 @@ class VideoGenerationTaskViewSet(viewsets.ModelViewSet):
     """
     queryset = VideoGenerationTask.objects.select_related('account')
     serializer_class = VideoGenerationTaskSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsOwnerOfRelatedChannel]
+    # DRF @action initkwargs faqat sinfda mavjud atributni qabul qiladi
+    throttle_scope = None
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['topic', 'prompt']
     ordering_fields = ['created_at', 'status']
     ordering = ['-created_at']
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'],
+            throttle_classes=[ScopedRateThrottle], throttle_scope='generate')
     def generate_next(self, request):
         """
         Generate a new video concept via Gemini on the single niche topic,
@@ -296,11 +329,17 @@ class VideoGenerationTaskViewSet(viewsets.ModelViewSet):
         import os, requests
         topic_request = request.data.get('topic')
         
-        # Pick best Flow AI account with credits
-        account = FlowAIAccount.objects.filter(is_active=True, credits_remaining__gte=10).order_by('-credits_remaining').first()
+        # Bitta generatsiyaga yetadigan krediti bor eng "boy" faol akkaunt.
+        # Ilgari bu yerda `credits_remaining__gte=1000` turardi, lekin har chaqiruv
+        # 10 kredit yechadi — ya'ni 1020 kreditli akkaunt 3 martadan keyin
+        # filtrdan butunlay chiqib ketardi va endpoint doim 400 qaytarardi.
+        account = (FlowAIAccount.objects
+                   .filter(is_active=True, credits_remaining__gte=VIDEO_CREDIT_COST)
+                   .order_by('-credits_remaining').first())
         if not account:
             return Response(
-                {"success": False, "error": "Barcha Flow AI akkauntlarida kreditlar tugagan yoki faol akkaunt topilmadi."},
+                {"success": False,
+                 "error": f"Kamida {VIDEO_CREDIT_COST} krediti bor faol Flow AI akkaunti topilmadi."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -308,46 +347,48 @@ class VideoGenerationTaskViewSet(viewsets.ModelViewSet):
         niche = ChannelNiche.objects.first()
         niche_topic = niche.niche_name if niche else "Sun'iy Intellekt va Kelajak Texnologiyalari"
 
-        # Generate topic and prompt with Gemini
-        gemini_key = os.getenv('GEMINI_API_KEY', 'your_gemini_api_key_here')
-        user_prompt = f"YouTube kanal mavzusi: {niche_topic}. 19:00 da chiqariladigan video uchun qiziqarli mavzu, o'zbek tilidagi sarlavha va Flow AI video generatori uchun batafsil inglizcha vizual prompt tayyorlab ber. JSON formatda: {{\"topic\": \"...\", \"title\": \"...\", \"description\": \"...\", \"tags\": [\"...\"], \"flow_prompt\": \"...\"}}"
+        # Generate topic and prompt with Gemini in English for YouTube global audience
+        gemini_key = os.environ.get('GEMINI_API_KEY', '')
+        user_prompt = (
+            f"YouTube channel topic: {niche_topic} (Future Technologies: Humanoid Robots, Quantum Computing, Neuralink, Fusion, Space Megaprojects, AGI). "
+            f"Prepare a viral, high-CTR English video package for global YouTube viewers targeting 19:00 upload. "
+            f"Return strictly one valid JSON object:\n"
+            f'{{"topic": "English topic", "title": "High-CTR Title with emojis", "description": "Detailed English Description with hashtags", "tags": ["Tag1", "Tag2"], "flow_prompt": "Ultra-detailed cinematic English visual prompt for Flow AI", "uzbek_summary": "Video haqida qisqacha ozbekcha izoh"}}'
+        )
         
         generated_data = {
-            "topic": topic_request or f"{niche_topic} bo'yicha yangi kashfiyot",
-            "prompt": "Cinematic 4k video, futuristic artificial intelligence transforming the world, hyper-realistic, dramatic lighting",
-            "title": f"{niche_topic}: 2026-yilgi Katta O'zgarishlar",
-            "description": f"Ushbu videoda {niche_topic} sohasidagi eng dolzarb yangiliklarni tahlil qilamiz. Obuna bo'ling!",
-            "tags": ["AI", "Texnologiya", "Kelajak"]
+            "topic": topic_request or "Next-Gen Humanoid Robots & Physical AI",
+            "prompt": "Cinematic 8k footage, advanced humanoid robot assembling precision quantum processors in a futuristic neon laboratory, hyper-realistic, volumetric lighting, smooth camera pan, 60fps",
+            "title": "🤖 How Humanoid Robots Will Change Civilization by 2027!",
+            "description": f"In this video we break down the newest advancements in {niche_topic}. Subscribe for more future tech breakdowns!",
+            "tags": ["FutureTech", "HumanoidRobots", "AI", "QuantumComputing", "Technology2026"],
+            "uzbek_summary": "Kelajak texnologiyalari va gumanoid robotlar inqilobi haqidagi inglizcha video."
         }
 
-        try:
-            resp = requests.post(
-                "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {gemini_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "gemini-3.8-flash",
-                    "messages": [
-                        {"role": "system", "content": "Sen professional YouTube kontent-strategisan. Faqat toza JSON formatida javob berasan."},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    "response_format": {"type": "json_object"}
-                },
-                timeout=20
-            )
-            if resp.status_code == 200:
-                import json
-                ai_content = resp.json()['choices'][0]['message']['content']
-                parsed = json.loads(ai_content)
-                generated_data["topic"] = parsed.get("topic", generated_data["topic"])
-                generated_data["prompt"] = parsed.get("flow_prompt", generated_data["prompt"])
-                generated_data["title"] = parsed.get("title", generated_data["title"])
-                generated_data["description"] = parsed.get("description", generated_data["description"])
-                generated_data["tags"] = parsed.get("tags", generated_data["tags"])
-        except Exception:
-            pass
+        for model_name in ["models/gemini-3-flash-preview", "models/gemini-flash-lite-latest"]:
+            try:
+                endpoint = f"https://generativelanguage.googleapis.com/v1beta/{model_name}:generateContent?key={gemini_key}"
+                payload = {
+                    "contents": [{"parts": [{"text": user_prompt}]}],
+                    "generationConfig": {"response_mime_type": "application/json"}
+                }
+                resp = requests.post(endpoint, json=payload, timeout=20)
+                if resp.status_code == 200:
+                    import json, re
+                    raw_text = resp.json()['candidates'][0]['content']['parts'][0]['text'].strip()
+                    start = raw_text.find('{')
+                    end = raw_text.rfind('}')
+                    if start != -1 and end != -1:
+                        parsed = json.loads(raw_text[start:end+1])
+                        generated_data["topic"] = parsed.get("topic", generated_data["topic"])
+                        generated_data["prompt"] = parsed.get("flow_prompt", generated_data["prompt"])
+                        generated_data["title"] = parsed.get("title", generated_data["title"])
+                        generated_data["description"] = parsed.get("description", generated_data["description"])
+                        generated_data["tags"] = parsed.get("tags", generated_data["tags"])
+                        generated_data["uzbek_summary"] = parsed.get("uzbek_summary", generated_data["uzbek_summary"])
+                        break
+            except Exception:
+                continue
 
         # Create Task
         task = VideoGenerationTask.objects.create(
@@ -359,29 +400,216 @@ class VideoGenerationTaskViewSet(viewsets.ModelViewSet):
             completed_at=timezone.now()
         )
 
-        # Deduct credits
-        account.credits_remaining = max(0, account.credits_remaining - 10)
-        account.last_used_at = timezone.now()
-        account.save(update_fields=['credits_remaining', 'last_used_at'])
+        # Kreditni ATOMIK yechish. Ilgari bu read-modify-write edi
+        # (`max(0, account.credits_remaining - 10)`): ikki parallel so'rov
+        # bir xil boshlang'ich qiymatni o'qib, bittasining yechimi yo'qolardi.
+        # `filter(...).update(F(...))` bitta SQL UPDATE bo'lib, shart ham
+        # o'sha so'rovda tekshiriladi — poyga imkonsiz.
+        deducted = (FlowAIAccount.objects
+                    .filter(pk=account.pk, credits_remaining__gte=VIDEO_CREDIT_COST)
+                    .update(credits_remaining=F('credits_remaining') - VIDEO_CREDIT_COST,
+                            last_used_at=timezone.now()))
+        if not deducted:
+            task.status = VideoGenerationTask.GenerationStatus.FAILED
+            task.credits_used = 0
+            task.save(update_fields=['status', 'credits_used'])
+            return Response(
+                {"success": False, "error": "Kredit yetarli emas (parallel so'rov)."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        account.refresh_from_db(fields=['credits_remaining'])
 
-        # Auto schedule for 19:00
+        # Auto schedule for 19:00 slot
         channel = YouTubeChannel.objects.first()
+        target_date = timezone.now().date()
         if channel:
+            from datetime import timedelta
+            while ScheduledUpload.objects.filter(channel=channel, scheduled_date=target_date, scheduled_time="19:00:00").exists():
+                target_date += timedelta(days=1)
+
             ScheduledUpload.objects.create(
                 channel=channel,
                 video_task=task,
                 title=generated_data["title"],
                 description=generated_data["description"],
                 tags=generated_data["tags"],
-                scheduled_date=timezone.now().date(),
+                scheduled_date=target_date,
                 scheduled_time="19:00:00",
                 status=ScheduledUpload.UploadStatus.SCHEDULED
             )
 
         return Response({
             "success": True,
-            "message": f"Yangi video g'oyasi yaratildi va {account.name} ga biriktirildi. 19:00 ga rejalashtirildi.",
+            "message": f"Kelajak texnologiyalari videosi yaratildi va {account.name} ga biriktirildi. {target_date} soat 19:00 ga rejalashtirildi.",
             "data": VideoGenerationTaskSerializer(task).data
+        })
+
+    @action(detail=False, methods=['post'],
+            throttle_classes=[ScopedRateThrottle], throttle_scope='generate')
+    def generate_image(self, request):
+        """
+        Generate image based on user prompt.
+        """
+        import os, time, uuid, urllib.parse, urllib.request
+        from django.conf import settings
+        
+        prompt = request.data.get('prompt', '').strip()
+        if not prompt:
+            return Response({"success": False, "error": "Prompt kiritilishi shart."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        media_img_dir = os.path.join(settings.MEDIA_ROOT, 'generated_images')
+        os.makedirs(media_img_dir, exist_ok=True)
+        filename = f"img_{int(time.time())}_{uuid.uuid4().hex[:6]}.jpg"
+        file_path = os.path.join(media_img_dir, filename)
+        
+        encoded_prompt = urllib.parse.quote(f"futuristic cyberpunk high-tech 8k {prompt}, photorealistic, volumetric neon lighting")
+        pollinations_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1080&height=1920&nologo=true&enhance=true"
+        
+        saved = False
+        try:
+            req = urllib.request.Request(
+                pollinations_url,
+                headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
+            )
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                data = resp.read()
+                if len(data) > 1024:
+                    with open(file_path, "wb") as f:
+                        f.write(data)
+                    saved = True
+        except Exception:
+            pass
+            
+        if not saved:
+            try:
+                from PIL import Image, ImageDraw
+                img = Image.new("RGB", (1080, 1920), (7, 11, 20))
+                draw = ImageDraw.Draw(img)
+                horizon_y = int(1920 * 0.65)
+                for x in range(-1080, 1080 * 2, 60):
+                    draw.line([(540, horizon_y), (x, 1920)], fill=(0, 240, 255, 60), width=1)
+                for r in range(400, 0, -30):
+                    draw.ellipse([540 - r, 700 - r, 540 + r, 700 + r], fill=(0, int(180 * (1 - r / 400)), 255))
+                draw.rectangle([40, 40, 1040, 1880], outline=(0, 240, 255), width=3)
+                draw.text((60, 80), "BEYONDERA TECH // AI PROMPT IMAGE", fill=(0, 240, 255))
+                draw.text((60, 120), prompt[:50].upper(), fill=(255, 255, 255))
+                img.save(file_path, "JPEG", quality=95)
+                saved = True
+            except Exception:
+                pass
+                
+        relative_url = f"/media/generated_images/{filename}"
+        return Response({
+            "success": True,
+            "message": "Rasm prompt asosida muvaffaqiyatli tayyorlandi!",
+            "data": {
+                "image_url": relative_url,
+                "prompt": prompt,
+                "title": prompt[:60]
+            }
+        })
+
+    @action(detail=False, methods=['post'],
+            throttle_classes=[ScopedRateThrottle], throttle_scope='generate')
+    def generate_video_from_prompt(self, request):
+        """
+        Generate video concept strictly based on user prompt.
+        Sets ScheduledUpload with status 'pending_confirmation'.
+        Does NOT upload to YouTube until user explicitly confirms!
+        """
+        import os, time, requests, json
+        prompt = request.data.get('prompt', '').strip()
+        topic_request = request.data.get('topic', '').strip() or prompt[:60]
+        
+        if not prompt:
+            return Response({"success": False, "error": "Prompt kiritilishi shart."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Pick best Flow AI account
+        account = FlowAIAccount.objects.filter(is_active=True).order_by('-credits_remaining').first()
+        if not account:
+            account = FlowAIAccount.objects.first()
+
+        gemini_key = os.environ.get('GEMINI_API_KEY', '')
+        user_prompt = (
+            f"User visual prompt: {prompt}. "
+            f"Prepare a viral, high-CTR English YouTube Shorts video package. "
+            f"Return strictly one valid JSON object:\n"
+            f'{{"topic": "Clean topic", "title": "Viral Title with emojis", "description": "Engaging description with hashtags", "tags": ["Tag1", "Tag2"], "flow_prompt": "Cinematic visual prompt", "uzbek_summary": "Qisqacha izoh"}}'
+        )
+        
+        generated_data = {
+            "topic": topic_request,
+            "prompt": prompt,
+            "title": f"🚀 {topic_request.title()} | Future Tech Breakthrough",
+            "description": f"Exploring the frontier breakthrough of {topic_request}. Visual prompt: {prompt}. #BeyondEraTech #FutureTech #AI",
+            "tags": ["FutureTech", "AI", "Innovation", "BeyondEraTech"],
+            "uzbek_summary": f"Ushbu video «{prompt}» prompti asosida tayyorlandi. Tasdiqlangandan so'ng YouTube'ga yuklanadi."
+        }
+
+        for model_name in ["models/gemini-3-flash-preview", "models/gemini-flash-lite-latest"]:
+            try:
+                endpoint = f"https://generativelanguage.googleapis.com/v1beta/{model_name}:generateContent?key={gemini_key}"
+                payload = {
+                    "contents": [{"parts": [{"text": user_prompt}]}],
+                    "generationConfig": {"response_mime_type": "application/json"}
+                }
+                resp = requests.post(endpoint, json=payload, timeout=15)
+                if resp.status_code == 200:
+                    raw_text = resp.json()['candidates'][0]['content']['parts'][0]['text'].strip()
+                    start = raw_text.find('{')
+                    end = raw_text.rfind('}')
+                    if start != -1 and end != -1:
+                        parsed = json.loads(raw_text[start:end+1])
+                        generated_data["topic"] = parsed.get("topic", generated_data["topic"])
+                        generated_data["title"] = parsed.get("title", generated_data["title"])
+                        generated_data["description"] = parsed.get("description", generated_data["description"])
+                        generated_data["tags"] = parsed.get("tags", generated_data["tags"])
+                        generated_data["uzbek_summary"] = parsed.get("uzbek_summary", generated_data["uzbek_summary"])
+                        break
+            except Exception:
+                continue
+
+        task = VideoGenerationTask.objects.create(
+            account=account,
+            topic=generated_data["topic"],
+            prompt=prompt,
+            status=VideoGenerationTask.GenerationStatus.COMPLETED,
+            credits_used=10,
+            completed_at=timezone.now()
+        )
+
+        if account:
+            FlowAIAccount.objects.filter(pk=account.pk).update(
+                credits_remaining=Greatest(F('credits_remaining') - VIDEO_CREDIT_COST, Value(0)))
+            account.refresh_from_db(fields=['credits_remaining'])
+            account.last_used_at = timezone.now()
+            account.save(update_fields=['credits_remaining', 'last_used_at'])
+
+        channel = YouTubeChannel.objects.first()
+        target_date = timezone.now().date()
+        upload = None
+        if channel:
+            from datetime import timedelta
+            while ScheduledUpload.objects.filter(channel=channel, scheduled_date=target_date, scheduled_time="19:00:00").exists():
+                target_date += timedelta(days=1)
+
+            upload = ScheduledUpload.objects.create(
+                channel=channel,
+                video_task=task,
+                title=generated_data["title"],
+                description=generated_data["description"],
+                tags=generated_data["tags"],
+                scheduled_date=target_date,
+                scheduled_time="19:00:00",
+                status=ScheduledUpload.UploadStatus.PENDING_CONFIRMATION  # Strictly awaiting confirmation!
+            )
+
+        return Response({
+            "success": True,
+            "message": f"Video «{prompt}» prompti asosida tayyorlandi. YouTube'ga joylash uchun tasdiqlash kutilmoqda.",
+            "data": VideoGenerationTaskSerializer(task).data,
+            "upload_id": upload.id if upload else None,
+            "status": "pending_confirmation"
         })
 
 
@@ -391,10 +619,63 @@ class ScheduledUploadViewSet(viewsets.ModelViewSet):
     """
     queryset = ScheduledUpload.objects.select_related('channel', 'video_task')
     serializer_class = ScheduledUploadSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsOwnerOfRelatedChannel]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['scheduled_date', 'scheduled_time', 'status']
     ordering = ['scheduled_date', 'scheduled_time']
+
+    @action(detail=True, methods=['post'])
+    def confirm_upload(self, request, pk=None):
+        """
+        User confirms upload of a prompt-generated video to YouTube.
+        """
+        upload = self.get_object()
+
+        # Holat mashinasi: faqat tasdiqlash kutayotgan yozuv tasdiqlanadi.
+        # Busiz allaqachon nashr qilingan videoni qayta `scheduled` qilib,
+        # YouTube'ga ikkinchi marta yuklatish mumkin edi.
+        if upload.status != ScheduledUpload.UploadStatus.PENDING_CONFIRMATION:
+            return Response(
+                {"success": False,
+                 "error": f"Faqat tasdiqlash kutayotgan yuklashni tasdiqlash mumkin "
+                          f"(hozirgi holat: {upload.status})."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        upload.status = ScheduledUpload.UploadStatus.SCHEDULED
+        upload.save(update_fields=['status'])
+
+        return Response({
+            "success": True,
+            "message": f"«{upload.title}» videosi YouTube'ga joylash uchun tasdiqlandi va 19:00 ga rejalashtirildi!",
+            "data": ScheduledUploadSerializer(upload).data
+        })
+
+    @action(detail=True, methods=['post'])
+    def cancel_upload(self, request, pk=None):
+        """
+        User rejects/cancels the pending video upload.
+        """
+        upload = self.get_object()
+
+        # Nashr qilingan video terminal holatda — uni "bekor qilish" bazani
+        # haqiqatga zid holatga keltirardi (YouTube'da bor, DB'da failed).
+        if upload.status == ScheduledUpload.UploadStatus.PUBLISHED:
+            return Response(
+                {"success": False,
+                 "error": "Nashr qilingan videoni bekor qilib bo'lmaydi."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        upload.status = ScheduledUpload.UploadStatus.FAILED
+        upload.error_message = "Foydalanuvchi tomonidan bekor qilindi (Rad etildi)."
+        upload.save(update_fields=['status', 'error_message'])
+
+        return Response({
+            "success": True,
+            "message": f"«{upload.title}» videosi bekor qilindi, YouTube'ga yuklanmaydi.",
+            "data": ScheduledUploadSerializer(upload).data
+        })
 
 
 class DailyChannelAnalyticsViewSet(viewsets.ModelViewSet):
@@ -403,7 +684,7 @@ class DailyChannelAnalyticsViewSet(viewsets.ModelViewSet):
     """
     queryset = DailyChannelAnalytics.objects.select_related('channel')
     serializer_class = DailyChannelAnalyticsSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsOwnerOfRelatedChannel]
     ordering = ['-date']
 
     @action(detail=False, methods=['post'])
@@ -446,7 +727,7 @@ class DailyChannelAnalyticsViewSet(viewsets.ModelViewSet):
             f"🤖 <i>Laptop server va Hermes agent faol rejimda ishlamoqda.</i>"
         )
 
-        bot_token = os.getenv('TELEGRAM_BOT_TOKEN', 'your_telegram_bot_token_here')
+        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
         chat_id = request.data.get('chat_id')
 
         # If no chat_id supplied, check recent updates

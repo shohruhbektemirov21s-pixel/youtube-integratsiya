@@ -95,8 +95,8 @@ DB_HOST=db
 DB_PORT=5432
 
 # API Kalitlar
-GEMINI_API_KEY=your_gemini_api_key_here
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+GEMINI_API_KEY=<Google AI Studio'dan olingan kalit>
+TELEGRAM_BOT_TOKEN=<@BotFather bergan token>
 ```
 
 ### 2. Docker orqali ishga tushirish

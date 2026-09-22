@@ -1,0 +1,13 @@
+# Host'da ishlaydigan avtomatlashtirish skriptlari uchun bog'liqliklar.
+# (backend/requirements.txt faqat Docker ichidagi Django uchun.)
+playwright>=1.48
+python-telegram-bot>=21.0
+edge-tts>=6.1
+python-dotenv>=1.0
+requests>=2.32
+Pillow>=11.0
+
+# YouTube Data API v3 orqali yuklash uchun
+google-auth>=2.35
+google-auth-oauthlib>=1.2
+google-api-python-client>=2.150

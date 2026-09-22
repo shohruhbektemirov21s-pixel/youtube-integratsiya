@@ -1,0 +1,192 @@
+{
+  "version": "2.0.0",
+  "updated_at": "2026-09-21T00:14:35.489044",
+  "total_records": 9,
+  "records": [
+    {
+      "generation_id": "b484660e-0bef-459c-8f65-65504c132206",
+      "topic": "AI 2035: AI qaror qabul qilsa [2/3]",
+      "title": "AI Qaror Qabul Qilsa Nima Bo'ladi? 🤖 [2/3] #Shorts",
+      "topic_hash": "f6ce09dc949f41800e822af08aff95b3b16f52730271b7fdea67393b8732a75b",
+      "script_hash": "e8f1d312c2bf80e16b7505f1ba64debec44d30c797d27f670b999fb6f9da70c1",
+      "prompt_hash": "c29fd71cd79093766a399a8d71a0bb96624c241561a7be960c37540857e78a42",
+      "flow_generation_id": "FLOW_704193C870A8",
+      "output_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/archive/b484660e-0bef-459c-8f65-65504c132206_b484660e-0bef-459c-8f65-65504c132206_rendered_shorts.mp4",
+      "video_hash": "9ace79db7ef62f205c298d5fb5774a9f8b657b6912d8a862cb785e7e77a60dbe",
+      "thumbnail_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/working/b484660e-0bef-459c-8f65-65504c132206/thumbnail.jpg",
+      "status": "PUBLISHED",
+      "created_at": "2026-09-20T12:38:53.268554",
+      "uploaded_at": "2026-09-20T12:38:53.268556",
+      "youtube_video_id": "BE_9ACE79DB_89933",
+      "metadata": {
+        "duration": 47.71,
+        "resolution": "1080x1920",
+        "archived_at": "2026-09-20T12:38:53.268473"
+      }
+    },
+    {
+      "generation_id": "95d38e29-d23e-4ab6-b9d2-35341496f27b",
+      "topic": "AI 2035: Inson + AI [3/3]",
+      "title": "AI 2035: Inson va Sun'iy Intellekt! 🤖 #Shorts",
+      "topic_hash": "e6836ce467741d4f1b5b7923c45d4432b27256c9fa21c6dc5f1ed60f0683e2f9",
+      "script_hash": "153194152986c620bcb4c521865fb8a03071beb3417daea51bd20b0531927d8c",
+      "prompt_hash": "5e41206e64f03fe147348b90203383fe635a4734184102fee0a031f5952dca9c",
+      "flow_generation_id": "FLOW_7A6B9ADCE50B",
+      "output_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/archive/95d38e29-d23e-4ab6-b9d2-35341496f27b_95d38e29-d23e-4ab6-b9d2-35341496f27b_rendered_shorts.mp4",
+      "video_hash": "e0076553c9a3a32ee09564170f69715ccf9b49e86bb178817502fa4c5e4a064b",
+      "thumbnail_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/working/95d38e29-d23e-4ab6-b9d2-35341496f27b/thumbnail.jpg",
+      "status": "PUBLISHED",
+      "created_at": "2026-09-20T12:40:16.197350",
+      "uploaded_at": "2026-09-20T12:40:16.197353",
+      "youtube_video_id": "BE_E0076553_90016",
+      "metadata": {
+        "duration": 48.87,
+        "resolution": "1080x1920",
+        "archived_at": "2026-09-20T12:40:16.197245"
+      }
+    },
+    {
+      "generation_id": "d7351d93-c533-45f3-90d1-1c4bfb436b84",
+      "topic": "AGI: Oddiy AI'dan keyingi bosqich [1/3]",
+      "title": "AGI Nimani O'zgartiradi? [1/3] 🧠🤖 #Shorts",
+      "topic_hash": "8f4ece7ccec776555451413cca0488b69ceac9adf71f772f36020f3327ef1ac6",
+      "script_hash": "5c611b2ff22c4d10063f91247cf9c89a921493081186ca037faebadb69247f35",
+      "prompt_hash": "4bb11fcc03cd3d857a07b779badd8c8b31a8a5df47146156eef11fe3b13dac5f",
+      "flow_generation_id": "FLOW_1C41167167A3",
+      "output_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/archive/d7351d93-c533-45f3-90d1-1c4bfb436b84_d7351d93-c533-45f3-90d1-1c4bfb436b84_rendered_shorts.mp4",
+      "video_hash": "e44faf56627c4553dbb06c5c68477fd57bae9cc60612a96bfaae1cd43de18ef7",
+      "thumbnail_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/working/d7351d93-c533-45f3-90d1-1c4bfb436b84/thumbnail.jpg",
+      "status": "PUBLISHED",
+      "created_at": "2026-09-20T12:41:26.628069",
+      "uploaded_at": "2026-09-20T12:41:26.628073",
+      "youtube_video_id": "BE_E44FAF56_90086",
+      "metadata": {
+        "duration": 46.75,
+        "resolution": "1080x1920",
+        "archived_at": "2026-09-20T12:41:26.627927"
+      }
+    },
+    {
+      "generation_id": "reupload_attempt_1789890089",
+      "topic": "Duplicate Test Topic",
+      "title": "Duplicate Video Test Upload",
+      "topic_hash": "557d420b4d13481217d1a5ca2e1212da51e9aee751921ac7d8c56aced0c85c10",
+      "script_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prompt_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "flow_generation_id": "",
+      "output_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/failed/b484660e-0bef-459c-8f65-65504c132206_b484660e-0bef-459c-8f65-65504c132206_rendered_shorts.mp4",
+      "video_hash": "9ace79db7ef62f205c298d5fb5774a9f8b657b6912d8a862cb785e7e77a60dbe",
+      "thumbnail_path": null,
+      "status": "FAILED_DUPLICATE",
+      "created_at": "2026-09-20T12:41:29.483467",
+      "uploaded_at": null,
+      "youtube_video_id": null,
+      "metadata": {
+        "validation_error": "FAILED_DUPLICATE: Video hash 9ace79db7ef6... already uploaded or recorded in archive."
+      }
+    },
+    {
+      "generation_id": "96b3ff50-7f5b-4e40-ad4c-6f18c24d1955",
+      "topic": "AGI: AGI kelganda jamiyat [3/3]",
+      "title": "AGI Jamiyatni Qanday O'zgartiradi? 🤖 #Shorts",
+      "topic_hash": "98e94104e47e7b1b7292eaec9478c58569c0c60cf46e40cce3c8392404b2315b",
+      "script_hash": "7be7d9396822ed7a2a2e615924c68675bae0eb206373c8ffbbffe3ccc59eab6d",
+      "prompt_hash": "48c08652d8acfeeb30e76bf33bd3de1ddc20b3b6e4cd469ee16228894e778da8",
+      "flow_generation_id": "FLOW_FD2BCC14B4A3",
+      "output_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/archive/96b3ff50-7f5b-4e40-ad4c-6f18c24d1955_96b3ff50-7f5b-4e40-ad4c-6f18c24d1955_rendered_shorts.mp4",
+      "video_hash": "f1a33e9b8c30c046ba563ec7bd2be5002313801cad0ed06b2dfb8be62bbd2947",
+      "thumbnail_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/working/96b3ff50-7f5b-4e40-ad4c-6f18c24d1955/thumbnail.jpg",
+      "status": "PUBLISHED",
+      "created_at": "2026-09-20T12:46:19.454035",
+      "uploaded_at": "2026-09-20T12:46:19.454038",
+      "youtube_video_id": "BE_F1A33E9B_90379",
+      "metadata": {
+        "duration": 47.62,
+        "resolution": "1080x1920",
+        "archived_at": "2026-09-20T12:46:19.453914"
+      }
+    },
+    {
+      "generation_id": "a533a297-c7b4-438b-8f85-98d55061460e",
+      "topic": "Humanoid Robotlar [1/3]",
+      "title": "Nega Robotlar Odamga O'xshaydi? 🤖 #Shorts",
+      "topic_hash": "58c504d5edef5fe475fbf88e60177cbed71d0bb630508ef1c22ad4516979d59e",
+      "script_hash": "83a8f068b920d2b0f2550d1659152f49e1859cf528732d92058b162ac6882a24",
+      "prompt_hash": "11f1f7141cd610ff746c57f0219ffb487ec87e488aea95b45a6d7ca4e5688846",
+      "flow_generation_id": "FLOW_1B1D10240039",
+      "output_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/archive/a533a297-c7b4-438b-8f85-98d55061460e_a533a297-c7b4-438b-8f85-98d55061460e_rendered_shorts.mp4",
+      "video_hash": "15017f6941f3f46b79a58bb24fd4986674215186f1fee4e05838fae7bd46ec27",
+      "thumbnail_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/working/a533a297-c7b4-438b-8f85-98d55061460e/thumbnail.jpg",
+      "status": "PUBLISHED",
+      "created_at": "2026-09-20T12:47:45.637214",
+      "uploaded_at": "2026-09-20T12:47:45.637221",
+      "youtube_video_id": "BE_15017F69_90465",
+      "metadata": {
+        "duration": 42.87,
+        "resolution": "1080x1920",
+        "archived_at": "2026-09-20T12:47:45.636921"
+      }
+    },
+    {
+      "generation_id": "c3dc181d-ecee-4293-88de-7b4cb7fd7cb6",
+      "topic": "Robotlar zavodlarda [1/3]",
+      "title": "Kelajak Zavodida Odamlar Qayerda Qoladi? Robotlar [1/3] 🤖",
+      "topic_hash": "b5ff3364bebd28e93db299536f67703c6087484b4ef88b2bd1120c41d41d8aad",
+      "script_hash": "111aca320b76e5e0a4d8ffeb9851c5b4f810f3d4d2ad9817cc43d65cabc74169",
+      "prompt_hash": "74c797a3f13d34ffb7032b4200b2f8ceaf75860188b4d56d9f3d79c061698e94",
+      "flow_generation_id": "FLOW_A4494F83B93E",
+      "output_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/archive/c3dc181d-ecee-4293-88de-7b4cb7fd7cb6_c3dc181d-ecee-4293-88de-7b4cb7fd7cb6_rendered_long.mp4",
+      "video_hash": "eece5de5ce52905ef44d2a757d13f1e58c51356bc265670aebe73ec8ffc745cb",
+      "thumbnail_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/working/c3dc181d-ecee-4293-88de-7b4cb7fd7cb6/thumbnail.jpg",
+      "status": "PUBLISHED",
+      "created_at": "2026-09-20T12:49:05.550544",
+      "uploaded_at": "2026-09-20T12:49:05.550548",
+      "youtube_video_id": "BE_EECE5DE5_90545",
+      "metadata": {
+        "duration": 60.0,
+        "resolution": "1920x1080",
+        "archived_at": "2026-09-20T12:49:05.550328"
+      }
+    },
+    {
+      "generation_id": "reupload_attempt_1789890547",
+      "topic": "Duplicate Test Topic",
+      "title": "Duplicate Video Test Upload",
+      "topic_hash": "557d420b4d13481217d1a5ca2e1212da51e9aee751921ac7d8c56aced0c85c10",
+      "script_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prompt_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "flow_generation_id": "",
+      "output_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/failed/96b3ff50-7f5b-4e40-ad4c-6f18c24d1955_96b3ff50-7f5b-4e40-ad4c-6f18c24d1955_rendered_shorts.mp4",
+      "video_hash": "f1a33e9b8c30c046ba563ec7bd2be5002313801cad0ed06b2dfb8be62bbd2947",
+      "thumbnail_path": null,
+      "status": "FAILED_DUPLICATE",
+      "created_at": "2026-09-20T12:49:07.560213",
+      "uploaded_at": null,
+      "youtube_video_id": null,
+      "metadata": {
+        "validation_error": "FAILED_DUPLICATE: Video hash f1a33e9b8c30... already uploaded or recorded in archive."
+      }
+    },
+    {
+      "generation_id": "23daa876-de00-4986-ab63-870d3be98a06",
+      "topic": "Cinematic Futuristic Short Film: The Future of Technology",
+      "title": "🤖 How Humanoid Robots Will Reshape Civilization (2026-2030) 🌐",
+      "topic_hash": "cb4dd2f85e9e4945e750e925c04fcd584509cbb2f50703f674ebdfc5a4338cec",
+      "script_hash": "b3b840b584514988f5ab073c4d28338513be0d40e5e6f09100aa883e69679f64",
+      "prompt_hash": "b1bd89ae28359ae9cd1f1321379643b22df125510834b2734bb48b3de5a08576",
+      "flow_generation_id": "FLOW_37C355253123",
+      "output_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/archive/23daa876-de00-4986-ab63-870d3be98a06_23daa876-de00-4986-ab63-870d3be98a06_rendered_long.mp4",
+      "video_hash": "129fd81b4d48a38c0b55daa23d8477ad2b8f5853983833560d12c78c30e9488d",
+      "thumbnail_path": "/home/kali/Рабочий стол/Youtube akkaunt integratsiyasi/workspace/working/23daa876-de00-4986-ab63-870d3be98a06/thumbnail.jpg",
+      "status": "PUBLISHED",
+      "created_at": "2026-09-21T00:14:35.489038",
+      "uploaded_at": "2026-09-21T00:14:35.489041",
+      "youtube_video_id": "BE_129FD81B_31675",
+      "metadata": {
+        "duration": 60.0,
+        "resolution": "1920x1080",
+        "archived_at": "2026-09-21T00:14:35.488930"
+      }
+    }
+  ]
+}

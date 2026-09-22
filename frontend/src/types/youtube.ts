@@ -152,7 +152,7 @@ export interface ScheduledUpload {
   tags: string[];
   scheduled_date: string;
   scheduled_time: string;
-  status: 'scheduled' | 'processing' | 'published' | 'failed';
+  status: 'pending_confirmation' | 'scheduled' | 'processing' | 'published' | 'failed';
   youtube_video_id: string;
   published_at: string | null;
   error_message: string;

@@ -227,7 +227,13 @@ class FlowAIAccountSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        # Kredit balansi va profil yo'li API orqali yozilmaydi: ular faqat
+        # haqiqiy generatsiya/tekshiruv natijasida server tomonda o'zgaradi.
+        read_only_fields = [
+            'id', 'created_at', 'updated_at',
+            'credits_remaining', 'initial_credits', 'last_used_at',
+            'profile_dir', 'inspection_status', 'last_inspected_at',
+        ]
 
 
 class ChannelNicheSerializer(serializers.ModelSerializer):
@@ -277,7 +283,11 @@ class VideoGenerationTaskSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'account_name']
+        # status/credits_used — kredit hisobini chetlab o'tishning to'g'ridan-to'g'ri yo'li edi
+        read_only_fields = [
+            'id', 'created_at', 'updated_at', 'account_name',
+            'status', 'credits_used', 'completed_at', 'video_file_path',
+        ]
 
 
 class ScheduledUploadSerializer(serializers.ModelSerializer):
@@ -307,7 +317,13 @@ class ScheduledUploadSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'channel_title', 'video_topic']
+        # status — PATCH bilan to'g'ridan-to'g'ri 'published' qilish mumkin edi,
+        # ya'ni tasdiqlash oqimini butunlay aylanib o'tish. Holat faqat
+        # confirm_upload/cancel_upload action'lari orqali o'zgaradi.
+        read_only_fields = [
+            'id', 'created_at', 'updated_at', 'channel_title', 'video_topic',
+            'status', 'youtube_video_id', 'published_at', 'error_message',
+        ]
 
 
 class DailyChannelAnalyticsSerializer(serializers.ModelSerializer):

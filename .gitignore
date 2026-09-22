@@ -81,3 +81,33 @@ lerna-debug.log*
 .DS_Store
 Thumbs.db
 .playwright-mcp/
+
+# Generated media files
+output/
+temp/
+workspace/working/
+workspace/ready_to_upload/
+workspace/archive/
+workspace/failed/
+*.mp4
+*.mp3
+*.wav
+*.ass
+
+# Development artifacts
+frontend/all_code.txt
+frontend/read_all_files.sh
+dashboard_live_preview.png
+
+# Backup fayllar (sir saqlashi mumkin)
+*.bak
+
+# YouTube OAuth sirlari — bular commit qilinsa refresh_token oshkor bo'ladi
+client_secrets.json
+youtube_oauth_token.json
+*_oauth_token.json
+*credentials*.json
+token.pickle
+
+# Tunnel URL va dedup tarixi
+workspace/telegram_webapp_url.txt

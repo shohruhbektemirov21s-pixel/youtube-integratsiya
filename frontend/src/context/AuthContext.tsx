@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { User, LoginPayload, RegisterPayload } from '../types/auth';
 import { authService } from '../services/authService';
-import { getAuthToken } from '../services/api';
+import { getAuthToken, AUTH_EXPIRED_EVENT } from '../services/api';
 import { AuthContext } from './AuthContextDefinition';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -28,6 +28,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshUser();
+
+    // Har qanday so'rov 401 qaytarsa darvoza darhol login ekraniga qaytsin
+    const onExpired = () => setUser(null);
+    window.addEventListener(AUTH_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, onExpired);
   }, []);
 
   const login = async (payload: LoginPayload) => {

@@ -4,11 +4,15 @@ Handles communication with Google YouTube Data API v3.
 """
 import os
 import logging
+import re
 from typing import Dict, Any, Optional
 import requests
 from django.conf import settings
 from django.utils import timezone
 from .models import YouTubeChannel, YouTubePlaylist, YouTubeVideo, SyncJob
+
+# URL query'sidagi ?key=... ni topadi
+_KEY_IN_URL = re.compile(r'([?&]key=)[^&\s"\']+')
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +27,13 @@ class YouTubeAPIError(Exception):
 class YouTubeService:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or getattr(settings, 'YOUTUBE_API_KEY', os.getenv('YOUTUBE_API_KEY', ''))
+
+    def _mask(self, text: str) -> str:
+        """Matndan API kalitini olib tashlaydi (log va xato xabarlari uchun)."""
+        key = getattr(self, 'api_key', None)
+        if key:
+            text = text.replace(key, '***MASKED***')
+        return _KEY_IN_URL.sub(r'\1***MASKED***', text)
 
     def _get(self, endpoint: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -42,12 +53,19 @@ class YouTubeService:
                 raise YouTubeAPIError(f"YouTube API 403 Forbidden: {message}")
 
             if not response.ok:
-                raise YouTubeAPIError(f"YouTube API xatosi ({response.status_code}): {response.text}")
+                # response.text va istisno matni so'rov URL'ini (ya'ni ?key=...)
+                # o'z ichiga olishi mumkin. Bu matn SyncJob.error_message ga
+                # yozilib API orqali qaytariladi — shuning uchun faqat logga.
+                logger.error(
+                    "YouTube API xatosi %s: %s",
+                    response.status_code, self._mask(response.text)[:500],
+                )
+                raise YouTubeAPIError(f"YouTube API xatosi ({response.status_code})")
 
             return response.json()
         except requests.RequestException as exc:
-            logger.error(f"Tarmoq xatosi YouTube API ga ulanishda: {str(exc)}")
-            raise YouTubeAPIError(f"YouTube API ga ulanishda xatolik: {str(exc)}")
+            logger.error("Tarmoq xatosi YouTube API ga ulanishda: %s", self._mask(str(exc)))
+            raise YouTubeAPIError("YouTube API ga ulanishda tarmoq xatosi yuz berdi.")
 
     def fetch_channel_details(self, channel_id: str) -> Dict[str, Any]:
         """

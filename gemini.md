@@ -4,14 +4,17 @@ Ushbu hujjat loyihada ishlayotgan barcha AI assistentlar va muhandislar uchun ma
 
 ## Asosiy Qoidalar
 
-1. **Noaniq talab bo‘lsa mendan so‘ra**: Agar biznes talab yoki texnik shartlarda tushunarsiz, ko'p ma'noli yoki yetishmayotgan qism bo'lsa, o'zboshimchalik bilan taxmin qilma — to'xtab, bitta aniq va lo'nda savol ber.
-2. **O‘zboshimchalik bilan qaror qabul qilma**: Biznes mantiqqa, arxitekturaga va tizim dizayniga oid asosiy qarorlar loyiha talablariga qat'iy muvofiq bo'lishi shart.
-3. **Berilgan vazifadan tashqariga chiqma**: Faqat berilgan aniq vazifa va uning doirasidagi ishlarni bajargin. Keraksiz "yaxshilash" yoki ortiqcha funksiyalar qo'shma.
-4. **Aloqasiz fayllarga tegma**: O'zgartirishlar faqat vazifaga bevosita tegishli bo'lgan fayllarda amalga oshiriladi. Boshqa fayllar va konfiguratsiyalarga tegilmaydi.
-5. **1-task to‘liq tugamaguncha 2-taskga o‘tma**: Bosqichma-bosqich ishlash tamoyiliga qat'iy rioya qil. Vazifani to'liq yakunlamasdan keyingisiga sakrama.
-6. **Har bir taskdan keyin test qil**: Har bir qadam va taskdan keyin testlarni ishga tushirib, natijani tekshir. Xato bo'lsa, uni darhol tuzat.
-7. **Rolni o‘zing tanla**: Vazifaning xarakteriga qarab Senior darajadagi mutaxassis rolini (Software Architect, Backend Developer, Frontend Developer, Database Engineer, DevOps yoki Security Engineer) avtomatik tanlab ish yurit.
-8. **Production-quality kod yoz**: Kod toza (Clean Code), SOLID tamoyillariga mos, xavfsiz, o'qilishi oson, to'liq tiplashgan va production muhitiga tayyor bo'lishi shart.
+1. **Senior engineering standards**: Write clean, resilient, production-quality, type-annotated code adhering to SOLID and industry best practices.
+2. **Task-by-task execution**: Follow the strict task sequence (TASK 1 to TASK 16). Do not skip ahead or jump between stages.
+3. **Do not skip failed tasks**: Every step must pass and be verified before moving to the next task.
+4. **Do not modify unrelated code**: Only touch files directly required for the autonomous content factory pipeline. Preserve existing working features.
+5. **Ask only when genuinely ambiguous**: If requirements are clear, execute automatically; only pause to ask if credentials or high-risk unknown security questions arise.
+6. **Never fake successful tests**: Never use mock outputs or stubs to fake real pipeline success.
+7. **Never mark a failed video as successful**: Black frames, frozen videos, empty audio, or missing scripts must trigger automated retries or explicit failure status.
+8. **Always verify generated files**: Check video duration, resolution, audio track, black-frame ratio, and integrity via ffprobe/ffmpeg.
+9. **Preserve existing architecture**: Maintain Django models, React dashboard, PostgreSQL schemas, Telegram bot, and Chrome profiles intact.
+10. **Keep secrets secure**: Never hardcode API keys, passwords, cookies, or tokens in source code; use `.env` and `.gitignore`.
+11. **Document important changes**: Keep clear logs, update state machines, and document critical pipeline mechanics.
 
 ---
 
@@ -19,9 +22,12 @@ Ushbu hujjat loyihada ishlayotgan barcha AI assistentlar va muhandislar uchun ma
 
 - **Backend**: Python 3, Django, Django REST Framework (DRF)
 - **Frontend**: TypeScript, React (Vite)
-- **Database**: PostgreSQL
-- **API**: RESTful API
-- **Security**: Xavfsiz muhit o'zgaruvchilari (.env), CORS, CSRF, Token/JWT autentifikatsiyasi
+- **Database**: PostgreSQL 16
+- **Browser Automation**: Playwright, Google Chrome Profiles
+- **Video & Audio Processing**: FFmpeg, Edge-TTS
+- **AI Models**: Google Gemini 3.8 Flash, Google Flow AI (VideoFX)
+- **Notifications**: Telegram Bot API (Text, Video, Voice Notes)
+- **Security**: Environment variables (.env), CORS, CSRF, Token/JWT authentication
 - **Version Control**: Git
 
 ---
@@ -31,3 +37,4 @@ Ushbu hujjat loyihada ishlayotgan barcha AI assistentlar va muhandislar uchun ma
 - Maxfiy kalitlar (SECRET_KEY, DB parollari, API kalitlar) hech qachon manba kodida (source code) saqlanmaydi.
 - Barcha maxfiy parametrlar `.env` faylida saqlanadi va `.gitignore` orqali git kuzatuvidan chiqariladi.
 - Namuna sifatida har doim `.env.example` taqdim etiladi.
+

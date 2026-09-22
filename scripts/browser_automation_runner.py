@@ -21,7 +21,11 @@ from playwright.sync_api import sync_playwright
 
 CHROME_USER_DATA_DIR = os.path.expanduser("~/.config/google-chrome")
 CHROME_BIN = "/usr/bin/google-chrome"
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your_telegram_bot_token_here")
+
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
+
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 
 
 def send_telegram_notification(message: str, chat_id: str = None) -> bool:
@@ -50,6 +54,12 @@ def send_telegram_notification(message: str, chat_id: str = None) -> bool:
         return False
 
 
+# Google Flow'ning HAQIQIY domeni. Ilgari bu yerda "https://flow.ai" turardi —
+# bu Google emas, uchinchi tomon domeni. Jonli Google sessiyali Chrome profili
+# bilan notanish domenga kirish sessiya o'g'irlash xavfini tug'diradi.
+FLOW_URL = os.environ.get("FLOW_AI_URL", "https://flow.google.com")
+
+
 def run_flow_ai_generation(profile_name: str, prompt: str, output_dir: str = "/tmp/videos") -> dict:
     """
     Connect to Flow AI using specific Chrome profile and generate video.
@@ -72,11 +82,16 @@ def run_flow_ai_generation(profile_name: str, prompt: str, output_dir: str = "/t
                 args=[
                     f"--profile-directory={profile_name}",
                     "--disable-blink-features=AutomationControlled",
-                    "--no-sandbox"
+                    # "--no-sandbox" OLIB TASHLANDI: u Chrome renderer
+                    # sandbox'ini o'chiradi va sahifadagi zararli JS to'g'ridan-
+                    # to'g'ri `kali` foydalanuvchisi huquqlarini olishi mumkin
+                    # bo'lardi (profil ichida jonli Google cookie'lari bor).
+                    # Konteynerda kerak bo'lsa: FLOW_ALLOW_NO_SANDBOX=1
+                    *(["--no-sandbox"] if os.environ.get("FLOW_ALLOW_NO_SANDBOX") == "1" else [])
                 ]
             )
             page = context.new_page()
-            page.goto("https://flow.ai", timeout=30000)
+            page.goto(FLOW_URL, timeout=30000)
             print(f"[Flow AI] Page title: {page.title()}")
             context.close()
     except Exception as e:

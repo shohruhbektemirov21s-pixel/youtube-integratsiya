@@ -4,9 +4,11 @@ interface NavbarProps {
   activeTab: NavTab;
   onTabChange: (tab: NavTab) => void;
   backendOnline: boolean;
+  username?: string;
+  onLogout?: () => void;
 }
 
-export function Navbar({ activeTab, onTabChange, backendOnline }: NavbarProps) {
+export function Navbar({ activeTab, onTabChange, backendOnline, username, onLogout }: NavbarProps) {
   return (
     <>
       {/* Top Glassmorphic Navigation Bar */}
@@ -53,6 +55,13 @@ export function Navbar({ activeTab, onTabChange, backendOnline }: NavbarProps) {
             </button>
             <button
               type="button"
+              className={`nav-pill-btn ${activeTab === 'playlists' ? 'active' : ''}`}
+              onClick={() => onTabChange('playlists')}
+            >
+              <span>📑</span> Playlistlar
+            </button>
+            <button
+              type="button"
               className={`nav-pill-btn ${activeTab === 'videos' ? 'active' : ''}`}
               onClick={() => onTabChange('videos')}
             >
@@ -90,9 +99,29 @@ export function Navbar({ activeTab, onTabChange, backendOnline }: NavbarProps) {
                 color: '#60a5fa',
               }}
             >
-              <span>👑</span>
-              <span>Admin Rejimi</span>
+              <span>👤</span>
+              <span>{username ?? 'Mehmon'}</span>
             </div>
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                title="Tizimdan chiqish"
+                style={{
+                  marginLeft: '0.5rem',
+                  padding: '0.35rem 0.75rem',
+                  background: 'transparent',
+                  border: '1px solid var(--border-color, rgba(148,163,184,0.3))',
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  color: 'var(--text-secondary, #94a3b8)',
+                  cursor: 'pointer',
+                }}
+              >
+                Chiqish
+              </button>
+            )}
           </div>
         </div>
       </header>

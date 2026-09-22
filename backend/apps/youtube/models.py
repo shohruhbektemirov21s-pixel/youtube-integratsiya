@@ -296,6 +296,14 @@ class VideoGenerationTask(TimeStampedModel):
         verbose_name = 'Video Generatsiya Vazifasi'
         verbose_name_plural = 'Video Generatsiya Vazifalari'
         ordering = ['-created_at']
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(status__in=[
+                    'queued', 'generating', 'completed', 'failed',
+                ]),
+                name='videogenerationtask_status_valid',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.topic} ({self.status})"
@@ -306,6 +314,7 @@ class ScheduledUpload(TimeStampedModel):
     Manages daily video uploads scheduled for 19:00.
     """
     class UploadStatus(models.TextChoices):
+        PENDING_CONFIRMATION = 'pending_confirmation', 'Tasdiqlash kutilmoqda'
         SCHEDULED = 'scheduled', 'Rejalashtirilgan'
         PROCESSING = 'processing', 'Yuklanmoqda'
         PUBLISHED = 'published', 'Nashr qilindi'
@@ -344,7 +353,17 @@ class ScheduledUpload(TimeStampedModel):
             models.UniqueConstraint(
                 fields=['channel', 'scheduled_date', 'scheduled_time'],
                 name='unique_channel_schedule_slot'
-            )
+            ),
+            # Django `choices` DB cheklovi emas — skriptlar ORM orqali
+            # 'SCHEDULED' (katta harf) yozib, yozuvlarni filtrlardan
+            # ko'rinmas qilib qo'ygan edi. Endi baza qabul qilmaydi.
+            models.CheckConstraint(
+                condition=models.Q(status__in=[
+                    'pending_confirmation', 'scheduled', 'processing',
+                    'published', 'failed',
+                ]),
+                name='scheduledupload_status_valid',
+            ),
         ]
 
     def __str__(self):

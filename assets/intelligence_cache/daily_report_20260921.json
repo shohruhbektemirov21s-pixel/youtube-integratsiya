@@ -1,0 +1,206 @@
+{
+  "report_date": "2026-09-21T00:09:04.968017",
+  "own_channel": {
+    "total_views": 0,
+    "average_views": 0,
+    "top_video": null,
+    "weaknesses": [],
+    "missing_topics": []
+  },
+  "competitor_intelligence": [
+    {
+      "channel": "Cleo Abram",
+      "avg_views": 4960000,
+      "top_video": {
+        "title": "What's Hidden Under Antarctica?",
+        "views": 9500000,
+        "views_formatted": "9.5M",
+        "duration": 1129,
+        "id": "XfGEMCb6BQU",
+        "description": ""
+      },
+      "title_patterns": [
+        "QUESTION_HOOK",
+        "NUMBER_PATTERN",
+        "CURIOSITY_GAP"
+      ]
+    },
+    {
+      "channel": "Science ABC",
+      "avg_views": 10040,
+      "top_video": {
+        "title": "Double-Slit Experiment & Wave-Particle Duality Explained in Simple Words",
+        "views": 39000,
+        "views_formatted": "39.0K",
+        "duration": 305,
+        "id": "Cc6FJXMfhew",
+        "description": ""
+      },
+      "title_patterns": [
+        "QUESTION_HOOK",
+        "NUMBER_PATTERN",
+        "CURIOSITY_GAP"
+      ]
+    },
+    {
+      "channel": "Seeker",
+      "avg_views": 42800,
+      "top_video": {
+        "title": "The Sahara Desert Used to Look Like This…And May Again",
+        "views": 70000,
+        "views_formatted": "70.0K",
+        "duration": 313,
+        "id": "5I2jJDfRk-w",
+        "description": ""
+      },
+      "title_patterns": [
+        "CURIOSITY_GAP"
+      ]
+    },
+    {
+      "channel": "Lukas's Lab",
+      "avg_views": 6560,
+      "top_video": {
+        "title": "Quantum Computers Explained Simply",
+        "views": 12000,
+        "views_formatted": "12.0K",
+        "duration": 538,
+        "id": "jDm_hpA38UA",
+        "description": ""
+      },
+      "title_patterns": [
+        "NUMBER_PATTERN",
+        "CURIOSITY_GAP"
+      ]
+    }
+  ],
+  "content_ideas": [
+    {
+      "topic": "AGI Self-Recursive Intelligence",
+      "title": "🌐 AI Just Wrote Its Own Upgrade! #Shorts",
+      "hook": "An AI system just rewrote its own source code and became ten times smarter overnight.",
+      "script": "An AI system just rewrote its own source code and became ten times smarter overnight. Without any human programmer, the model analyzed its own architecture, identified inefficiencies, and generated forty-seven thousand lines of optimized code. The next morning, it solved three unsolved physics problems that stumped human scientists for decades. This is recursive self-improvement, and experts say it's the last invention humanity will ever need to make. The singularity isn't a theory anymore. It's a timestamp.",
+      "scene_prompts": [
+        "Cinematic visualization of AI neural network self-modifying its architecture, flowing data streams and recursive code patterns, dark void with neon green",
+        "Close-up of holographic code being written autonomously on transparent displays, matrix-style cascading symbols, 8K photorealistic",
+        "Wide shot of massive data center with thousands of GPU racks pulsing with computation light, dramatic fog and volumetric rays",
+        "Abstract visualization of recursive intelligence loops expanding fractally, cosmic scale, mathematical beauty",
+        "Final shot of a single terminal screen displaying 'OPTIMIZATION COMPLETE - PERFORMANCE: +1000%', dramatic lighting"
+      ],
+      "visual_style": "Matrix emerald green, digital consciousness aesthetic",
+      "voice_model": "en-US-GuyNeural",
+      "music_profile": "cyber_pulse",
+      "tags": [
+        "Shorts",
+        "AGI",
+        "ArtificialIntelligence",
+        "Singularity",
+        "FutureTech",
+        "BeyondEraTech"
+      ],
+      "competitor_inspired_by": "Original"
+    },
+    {
+      "topic": "Neuralink Telepathic Communication",
+      "title": "🧠 Humans Can Now Read Minds! #Shorts",
+      "hook": "For the first time in human history, two people just had a conversation using only their thoughts.",
+      "script": "For the first time in human history, two people just had a conversation using only their thoughts. Neuralink's N2 implant decoded neural signals at sixteen thousand electrodes per second, translating raw brain activity into words with ninety-seven percent accuracy. The subject typed forty words per minute without moving a single muscle. This isn't science fiction anymore. Telepathic communication is now a medical reality. And the next upgrade will let you control any machine on Earth with your mind.",
+      "scene_prompts": [
+        "Cinematic close-up of brain-computer interface chip being precisely implanted by robotic surgical arm, sterile blue lighting, photorealistic 8K",
+        "Visualization of neural pathways firing between two human brains connected by digital light streams, dark background with neon synapses",
+        "Medical laboratory with patient using thought-controlled cursor on holographic display, volumetric lighting, shallow depth of field",
+        "Macro shot of the N2 neural implant chip with microscopic electrode threads, reflective titanium surface, extreme detail",
+        "Wide establishing shot of futuristic neuroscience research facility with glass walls showing brain scan holograms"
+      ],
+      "visual_style": "Medical futuristic, electric violet and white lighting",
+      "voice_model": "en-US-BrianNeural",
+      "music_profile": "ambient_flow_synth",
+      "tags": [
+        "Shorts",
+        "Neuralink",
+        "BrainChip",
+        "Telepathy",
+        "FutureTech",
+        "BeyondEraTech"
+      ],
+      "competitor_inspired_by": "Original"
+    },
+    {
+      "topic": "Humanoid Robot Mass Production",
+      "title": "🤖 Robots Are Now Building Themselves! #Shorts",
+      "hook": "Inside this factory, humanoid robots are assembling other humanoid robots, and nobody told them how.",
+      "script": "Inside this factory, humanoid robots are assembling other humanoid robots, and nobody told them how. Using zero-shot learning from a single video demonstration, these machines calibrated sub-millimeter precision assembly in under twenty minutes. They work twenty-four hours a day, never make errors, and learn faster with each unit they build. The production line is now fully autonomous. No human intervention required. And by next year, ten thousand of these will roll off the line every single month.",
+      "scene_prompts": [
+        "Cinematic tracking shot through automated gigafactory with rows of humanoid robots assembling components, neon blue industrial lighting, 8K",
+        "Close-up of robot hands precisely connecting micro-actuators with sub-millimeter accuracy, sparks and precision tools, shallow DOF",
+        "Overhead drone shot of entire production floor with hundreds of robots in synchronized motion, dramatic scale",
+        "Macro shot of robot optical sensor scanning and learning from another robot's movements, data overlay holographic effect",
+        "Final wide shot of completed humanoid robots standing in formation, LED eyes activating sequentially, cinematic reveal"
+      ],
+      "visual_style": "Industrial cyberpunk, neon cyan and dark steel",
+      "voice_model": "en-US-AndrewNeural",
+      "music_profile": "cyber_pulse",
+      "tags": [
+        "Shorts",
+        "Robotics",
+        "HumanoidRobot",
+        "Tesla",
+        "AI",
+        "FutureTech",
+        "BeyondEraTech"
+      ],
+      "competitor_inspired_by": "Original"
+    },
+    {
+      "topic": "Quantum Processor Micro-Assembly",
+      "title": "🔬 This Quantum Chip Changes Everything! #Shorts",
+      "hook": "Scientists just built a chip that makes every computer on Earth look like a calculator.",
+      "script": "Scientists just built a chip that makes every computer on Earth look like a calculator. Inside a cryogenic chamber at negative 273 degrees Celsius, photons are locked into quantum states that can solve problems no supercomputer ever could. This single processor contains more computational pathways than atoms in the visible universe. The revolution isn't coming. It just arrived. And what they're building next will terrify you.",
+      "scene_prompts": [
+        "Cinematic macro shot of glowing blue quantum processor chip inside cryogenic chamber with frost particles, volumetric laser beams, 8K photorealistic",
+        "Extreme close-up of photon pathways inside silicon photonic chip, neon blue light traces, shallow depth of field, anamorphic lens flares",
+        "Wide shot of cleanroom laboratory with scientists in white suits examining holographic quantum state displays, dramatic overhead lighting",
+        "Tracking shot along quantum computing rack with hundreds of golden cables and cryogenic cooling systems, cinematic fog",
+        "Final dramatic zoom into the processor core showing quantum entanglement visualization, particle effects, cosmic scale transition"
+      ],
+      "visual_style": "Cyberpunk cold laboratory, volumetric blue/cyan lighting",
+      "voice_model": "en-US-ChristopherNeural",
+      "music_profile": "quantum_suspense",
+      "tags": [
+        "Shorts",
+        "QuantumComputing",
+        "FutureTech",
+        "Science",
+        "AI",
+        "BeyondEraTech"
+      ],
+      "competitor_inspired_by": "Original"
+    },
+    {
+      "topic": "Nuclear Fusion Net Energy Gain",
+      "title": "⚡ Unlimited Energy Just Became Real! #Shorts",
+      "hook": "A reactor the size of a shipping container just produced more energy than the entire city of London uses in one hour.",
+      "script": "A reactor the size of a shipping container just produced more energy than the entire city of London uses in one hour. Inside a magnetic confinement chamber, hydrogen plasma reaches two hundred million degrees, four times hotter than the core of the sun. For the first time, the machine produced ten times more energy than it consumed. Fusion power is no longer thirty years away. It just happened. And this changes everything about human civilization.",
+      "scene_prompts": [
+        "Cinematic wide shot of compact tokamak fusion reactor with glowing plasma ring inside magnetic confinement, dramatic orange/blue lighting, 8K",
+        "Extreme macro of plasma discharge inside fusion chamber, intense white-hot core with magnetic field lines visible, photorealistic",
+        "Exterior shot of modular fusion power plant with steam rising, futuristic industrial architecture, golden hour lighting",
+        "Control room with engineers monitoring holographic plasma stability displays, blue terminal glow, cinematic atmosphere",
+        "Final shot zooming into the fusion core showing atomic nuclei merging, particle physics visualization, cosmic energy release"
+      ],
+      "visual_style": "Industrial cinematic, plasma orange and deep blue contrast",
+      "voice_model": "en-GB-RyanNeural",
+      "music_profile": "epic_uplifting",
+      "tags": [
+        "Shorts",
+        "FusionEnergy",
+        "CleanEnergy",
+        "Nuclear",
+        "FutureTech",
+        "BeyondEraTech"
+      ],
+      "competitor_inspired_by": "Original"
+    }
+  ],
+  "total_ideas": 5
+}

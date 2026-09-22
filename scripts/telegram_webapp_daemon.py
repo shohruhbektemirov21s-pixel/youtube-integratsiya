@@ -15,6 +15,9 @@ import logging
 import subprocess
 import urllib.request
 import urllib.error
+from dotenv import load_dotenv
+
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,9 +25,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger("telegram_webapp_daemon")
 
-BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "your_telegram_bot_token_here")
+BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 CLOUDFLARED_BIN = os.path.expanduser("~/.local/bin/cloudflared")
-KNOWN_CHAT_IDS = [5960858213]  # Add known user chat IDs here
+KNOWN_CHAT_IDS = [
+    int(x) for x in os.environ.get("TELEGRAM_ALLOWED_CHAT_IDS", "").replace(" ", "").split(",")
+    if x.strip().lstrip("-").isdigit()
+] or [5960858213]
+URL_CACHE_FILES = [
+    "/tmp/telegram_webapp_url.txt",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "workspace", "telegram_webapp_url.txt")
+]
+
 
 def set_telegram_menu_button(app_url: str, chat_id: int = None) -> bool:
     """Sets the Telegram bot chat menu button to open the Web App."""
@@ -59,10 +70,12 @@ def set_telegram_menu_button(app_url: str, chat_id: int = None) -> bool:
     return False
 
 def update_all_telegram_buttons(app_url: str):
-    """Updates the default and user-specific menu buttons."""
-    # Global default
-    set_telegram_menu_button(app_url)
-    # User-specific
+    """Menyu tugmasini FAQAT ruxsat etilgan chat'lar uchun o'rnatadi.
+
+    Ilgari bu yerda chat_id'siz set_telegram_menu_button(app_url) ham chaqirilardi —
+    u botning GLOBAL default tugmasini o'rnatib, botga /start yozgan har qanday
+    begona odamga "Boshqaruv Paneli" tugmasini ko'rsatardi.
+    """
     for cid in KNOWN_CHAT_IDS:
         set_telegram_menu_button(app_url, chat_id=cid)
 
@@ -91,6 +104,14 @@ def run_tunnel():
             if match and not discovered_url:
                 discovered_url = match.group(0)
                 logger.info(f"Discovered Cloudflare Tunnel URL: {discovered_url}")
+                for cache_file in URL_CACHE_FILES:
+                    try:
+                        os.makedirs(os.path.dirname(cache_file), exist_ok=True)
+                        with open(cache_file, "w") as f:
+                            f.write(discovered_url)
+                        logger.info(f"Saved tunnel URL to {cache_file}")
+                    except Exception as fe:
+                        logger.warning(f"Could not save to {cache_file}: {fe}")
                 time.sleep(2)  # Give Cloudflare a moment to propagate
                 update_all_telegram_buttons(discovered_url)
 
@@ -100,5 +121,24 @@ def run_tunnel():
         process.terminate()
         process.wait()
 
+def main():
+    """Tunnel uzilsa qayta ko'taradi (eksponensial backoff bilan)."""
+    if not BOT_TOKEN:
+        logger.error("TELEGRAM_BOT_TOKEN o'rnatilmagan — chiqilmoqda.")
+        sys.exit(1)
+
+    backoff = 5
+    while True:
+        started = time.time()
+        try:
+            run_tunnel()
+        except Exception as exc:
+            logger.error(f"Tunnel xatosi: {exc}")
+        uptime = time.time() - started
+        backoff = 5 if uptime > 120 else min(backoff * 2, 300)
+        logger.warning(f"Tunnel to'xtadi ({uptime:.0f}s ishladi). {backoff}s dan keyin qayta uriniladi...")
+        time.sleep(backoff)
+
+
 if __name__ == "__main__":
-    run_tunnel()
+    main()

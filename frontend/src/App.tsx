@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/useAuth';
+import { AuthModal } from './components/auth/AuthModal';
+import { Spinner } from './components/common/Spinner';
 import { Navbar, type NavTab } from './components/common/Navbar';
 import { ChannelList } from './components/channels/ChannelList';
 import { PlaylistList } from './components/playlists/PlaylistList';
@@ -12,33 +15,30 @@ import { youtubeService } from './services/youtubeService';
 import './App.css';
 
 function MainLayout() {
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<NavTab>('automation');
   const [backendOnline, setBackendOnline] = useState<boolean>(false);
 
-  const checkInitialHealth = async () => {
-    try {
-      const res = await youtubeService.checkHealth();
-      setBackendOnline(res.status === 'online');
-    } catch {
-      setBackendOnline(false);
-    }
-  };
-
   useEffect(() => {
-    // Initialize Telegram WebApp if running inside Telegram
-    const tg = (window as unknown as { Telegram?: { WebApp?: { ready: () => void; expand: () => void } } }).Telegram?.WebApp;
-    if (tg) {
-      try {
-        tg.ready();
-        tg.expand();
-      } catch (err) {
-        console.warn('Telegram WebApp init:', err);
-      }
-    }
+    let cancelled = false;
 
-    checkInitialHealth();
-    const interval = setInterval(checkInitialHealth, 15000);
-    return () => clearInterval(interval);
+    const checkHealth = async () => {
+      // Fon tabda so'rov yubormaymiz (mobil trafik va batareya)
+      if (document.visibilityState !== 'visible') return;
+      try {
+        const res = await youtubeService.checkHealth();
+        if (!cancelled) setBackendOnline(res.status === 'online');
+      } catch {
+        if (!cancelled) setBackendOnline(false);
+      }
+    };
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, []);
 
   return (
@@ -47,6 +47,8 @@ function MainLayout() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         backendOnline={backendOnline}
+        username={user?.username}
+        onLogout={() => { void logout(); }}
       />
 
       <main className="main-content">
@@ -62,10 +64,63 @@ function MainLayout() {
   );
 }
 
+/**
+ * Auth darvozasi.
+ *
+ * Backend `AllowAny` bo'lgani uchun bu qatlam ilgari umuman ulanmagan edi:
+ * AuthModal yozilgan, lekin hech qayerdan chaqirilmasdi. Endi API
+ * autentifikatsiya talab qiladi, shuning uchun darvoza majburiy.
+ */
+function AuthGate() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '1rem',
+          padding: '1.5rem',
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ fontSize: '2.5rem' }}>📺</div>
+        <h1 style={{ margin: 0, fontSize: '1.35rem' }}>YouTube AI Studio</h1>
+        <p style={{ margin: 0, opacity: 0.7, maxWidth: '28rem' }}>
+          Boshqaruv paneliga kirish uchun tizimga kiring.
+        </p>
+        {/* Darvoza modali yopilmaydi — yopish tugmasi hech narsa qilmaydi */}
+        <AuthModal isOpen onClose={() => {}} />
+      </div>
+    );
+  }
+
+  return <MainLayout />;
+}
+
 export function App() {
   return (
     <AuthProvider>
-      <MainLayout />
+      <AuthGate />
     </AuthProvider>
   );
 }
